@@ -36,7 +36,7 @@ jwt:
 permission:
   permit-all-urls:
     - /api/members/login
-    - /api/members/**
+    - /api/members
     - /images/**
     - /swagger
     - /swagger/**

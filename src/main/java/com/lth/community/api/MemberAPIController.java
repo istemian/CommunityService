@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class MemberAPIController {
     private final MemberService memberSecurityService;
     @PostMapping("/login")
-    public ResponseEntity<MemberLoginResponseVO> postMemberLogin(@RequestBody LoginVO login) {
+    public ResponseEntity<MemberLoginResponseVO> postMemberLogin(@RequestBody LoginVO login) throws Exception {
         MemberLoginResponseVO response = memberSecurityService.login(login);
         return new ResponseEntity<>(response, response.getCode());
     }
@@ -29,7 +29,8 @@ public class MemberAPIController {
     }
 
     @PostMapping("")
-    public ResponseEntity<MessageVO> postMemberJoin(@RequestBody MemberJoinVO data) {
-        return new ResponseEntity<>(memberSecurityService.memberJoin(data), HttpStatus.CREATED);
+    public ResponseEntity<MessageVO> postMemberJoin(@RequestBody MemberJoinVO data) throws Exception {
+        MessageVO response = memberSecurityService.memberJoin(data);
+        return new ResponseEntity<>(response, response.getCode());
     }
 }
