@@ -44,7 +44,7 @@ public class MemberInfoEntity implements UserDetails {
   @Column(name = "member_create_day") private LocalDateTime createDt;
   @Column(name = "member_suspension_day") private LocalDateTime suspensionDt;
   @Column(name = "member_suspension_reason") private String suspensionReason;
-  @Column(name = "member_delete_day") private LocalDateTime deleteDay;
+  @Column(name = "member_delete_day") private LocalDateTime deleteDt;
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {

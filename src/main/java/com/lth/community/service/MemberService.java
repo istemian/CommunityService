@@ -5,6 +5,7 @@ import com.lth.community.repository.MemberInfoRepository;
 import com.lth.community.security.provider.JwtTokenProvider;
 import com.lth.community.security.service.CustomUserDetailService;
 import com.lth.community.vo.*;
+import com.lth.community.vo.member.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
@@ -16,13 +17,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Random;
 import java.util.regex.Pattern;
 
 @Service
-@RequiredArgsConstructor // 클래스 내부에 있는 private final 지정된 객체들의 의존성 주입 (Autowired)
+@RequiredArgsConstructor
 public class MemberService {
     private final MemberInfoRepository memberInfoRepository;
     private final AuthenticationManagerBuilder authBuilder;
@@ -167,7 +167,7 @@ public class MemberService {
 
     public MessageVO deleteMember(String id) {
         MemberInfoEntity entity = memberInfoRepository.findByMemberId(id);
-        entity.setDeleteDay(LocalDateTime.now());
+        entity.setDeleteDt(LocalDateTime.now());
         memberInfoRepository.save(entity);
         return MessageVO.builder()
                 .key(entity.getMemberId())
@@ -255,7 +255,7 @@ public class MemberService {
                 .build();
     }
 
-    public MessageVO findMemberPw(MemberFindPw data) {
+    public MessageVO findMemberPw(MemberFindPwVO data) {
         Long entity = memberInfoRepository.countByMemberIdAndNameAndEmail(data.getId(), data.getName(), data.getEmail());
         if(entity == 0) {
             return  MessageVO.builder()

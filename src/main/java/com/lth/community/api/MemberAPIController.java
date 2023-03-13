@@ -2,6 +2,7 @@ package com.lth.community.api;
 
 import com.lth.community.service.MemberService;
 import com.lth.community.vo.*;
+import com.lth.community.vo.member.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,7 +48,7 @@ public class MemberAPIController {
         return new ResponseEntity<>(response, response.getCode());
     }
     @GetMapping("findPw")
-    public ResponseEntity<MessageVO> findMemberPw(@RequestBody MemberFindPw data) {
+    public ResponseEntity<MessageVO> findMemberPw(@RequestBody MemberFindPwVO data) {
         MessageVO response = memberService.findMemberPw(data);
         return new ResponseEntity<>(response, response.getCode());
     }

@@ -2,8 +2,13 @@ server:
   port: 9998
 
 spring:
-  datasource:
-    security
+  profiles:
+    include: security
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 110MB
 
 community:
   file:
@@ -28,12 +33,3 @@ springdoc:
 # Spring Security Settings
 jwt:
   secretKey: sdadpaosidopwkwqodjasdjaskjfdslhjsghldsgfsdfsdgdslgjoeqjrqwjedlkwqdjlsajdkl
-permission:
-  permit-all-urls:
-    - /api/members/login
-    - /api/members
-    - /images/**
-    - /swagger
-    - /swagger/**
-    - /swagger-ui/**
-    - /v3/api-docs/**

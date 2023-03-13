@@ -1,4 +1,4 @@
-package com.lth.community.vo;
+package com.lth.community.vo.member;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
