@@ -1,11 +1,7 @@
 package com.lth.community.api;
 
 import com.lth.community.service.MemberService;
-import com.lth.community.vo.LoginVO;
-import com.lth.community.vo.MemberInfoVO;
-import com.lth.community.vo.MemberJoinVO;
-import com.lth.community.vo.MessageVO;
-import com.lth.community.vo.MemberLoginResponseVO;
+import com.lth.community.vo.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,21 +12,43 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/members")
 @RequiredArgsConstructor
 public class MemberAPIController {
-    private final MemberService memberSecurityService;
+    private final MemberService memberService;
     @PostMapping("/login")
     public ResponseEntity<MemberLoginResponseVO> postMemberLogin(@RequestBody LoginVO login) throws Exception {
-        MemberLoginResponseVO response = memberSecurityService.login(login);
+        MemberLoginResponseVO response = memberService.login(login);
         return new ResponseEntity<>(response, response.getCode());
     }
 
     @GetMapping("")
     public ResponseEntity<MemberInfoVO> getMemberDetailInfo(Authentication authentication) {
-        return new ResponseEntity<>(memberSecurityService.getMemberDetailInfo(authentication.getName()), HttpStatus.OK);
+        return new ResponseEntity<>(memberService.getMemberDetailInfo(authentication.getName()), HttpStatus.OK);
     }
 
     @PostMapping("")
     public ResponseEntity<MessageVO> postMemberJoin(@RequestBody MemberJoinVO data) throws Exception {
-        MessageVO response = memberSecurityService.memberJoin(data);
+        MessageVO response = memberService.memberJoin(data);
+        return new ResponseEntity<>(response, response.getCode());
+    }
+
+    @DeleteMapping("")
+    public ResponseEntity<MessageVO> deleteMember(Authentication authentication) {
+        MessageVO response = memberService.deleteMember(authentication.getName());
+        return new ResponseEntity<>(response, response.getCode());
+    }
+    @PatchMapping("")
+    public ResponseEntity<MessageVO> updateMember(Authentication authentication, @RequestBody MemberUpdateVO data) {
+        MessageVO response = memberService.updateMember(authentication.getName(), data);
+        return new ResponseEntity<>(response, response.getCode());
+    }
+
+    @GetMapping("findId")
+    public ResponseEntity<MessageVO> findMemberId(@RequestParam String email) {
+        MessageVO response = memberService.findMemberId(email);
+        return new ResponseEntity<>(response, response.getCode());
+    }
+    @GetMapping("findPw")
+    public ResponseEntity<MessageVO> findMemberPw(@RequestBody MemberFindPw data) {
+        MessageVO response = memberService.findMemberPw(data);
         return new ResponseEntity<>(response, response.getCode());
     }
 }

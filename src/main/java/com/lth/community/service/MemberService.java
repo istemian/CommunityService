@@ -4,13 +4,11 @@ import com.lth.community.entity.MemberInfoEntity;
 import com.lth.community.repository.MemberInfoRepository;
 import com.lth.community.security.provider.JwtTokenProvider;
 import com.lth.community.security.service.CustomUserDetailService;
-import com.lth.community.vo.LoginVO;
-import com.lth.community.vo.MemberInfoVO;
-import com.lth.community.vo.MemberJoinVO;
-import com.lth.community.vo.MessageVO;
-import com.lth.community.vo.MemberLoginResponseVO;
+import com.lth.community.vo.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -18,6 +16,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Random;
 import java.util.regex.Pattern;
 
 @Service
@@ -28,6 +29,7 @@ public class MemberService {
     private final JwtTokenProvider tokenProvider;
     private final CustomUserDetailService userDetailService;
     private final PasswordEncoder encoder;
+    private final JavaMailSender javaMailSender;
 
     public MemberLoginResponseVO login(LoginVO login) throws Exception {
         MemberInfoEntity member = memberInfoRepository.findByMemberId(login.getId());
@@ -35,14 +37,14 @@ public class MemberService {
             return  MemberLoginResponseVO.builder()
                     .status(false)
                     .message("존재하지 않는 회원입니다.")
-                    .code(HttpStatus.FORBIDDEN)
+                    .code(HttpStatus.BAD_REQUEST)
                     .build();
         }
         else if (!encoder.matches(login.getPw(), member.getPassword())) {
             return  MemberLoginResponseVO.builder()
                     .status(false)
                     .message("비밀번호가 일치하지 않습니다.")
-                    .code(HttpStatus.FORBIDDEN)
+                    .code(HttpStatus.BAD_REQUEST)
                     .build();
         }
         else if (member.getStatus() == 2) {
@@ -62,7 +64,7 @@ public class MemberService {
                 .code(HttpStatus.OK)
                 .build();
 
-        if(!member.getRefreshToken().isEmpty()) {
+        if(member.getRefreshToken() != null) {
             member.setRefreshToken(null);
         }
         member.setRefreshToken(tokenProvider.generateToken(authentication).getRefreshToken());
@@ -153,12 +155,136 @@ public class MemberService {
                 .nickname(data.getNickname())
                 .email(data.getEmail())
                 .role("USER")
+                .createDt(LocalDateTime.now())
                 .build();
         memberInfoRepository.save(entity);
         return MessageVO.builder()
                 .key(data.getId())
                 .message("가입이 완료되었습니다.")
                 .code(HttpStatus.CREATED)
+                .build();
+    }
+
+    public MessageVO deleteMember(String id) {
+        MemberInfoEntity entity = memberInfoRepository.findByMemberId(id);
+        entity.setDeleteDay(LocalDateTime.now());
+        memberInfoRepository.save(entity);
+        return MessageVO.builder()
+                .key(entity.getMemberId())
+                .message("삭제되었습니다.")
+                .code(HttpStatus.OK)
+                .build();
+    }
+
+    public MessageVO updateMember(String id, MemberUpdateVO data) {
+        String pwPattern ="^[0-9|a-z|A-Z|!@#$%^&*()]*$";
+        String namePattern = "^[0-9|a-z|A-Z|ㄱ-ㅎ|ㅏ-ㅣ|가-힣]*$";
+        String emailPattern = "^[0-9|a-z|A-Z]+(.[_a-z|0-9-]+)*@(?:\\w+\\.)+\\w+$";
+        MemberInfoEntity entity = memberInfoRepository.findByMemberId(id);
+        if(data.getPw() != null) {
+            if(data.getPw().equals("") || !Pattern.matches(pwPattern, data.getPw()) || data.getPw().length() < 8) {
+                return MessageVO.builder()
+                        .key("error_password")
+                        .message("비밀번호를 다시 확인해주세요. (8자리 이상, 공백 불가)")
+                        .code(HttpStatus.BAD_REQUEST)
+                        .build();
+            }
+            else {
+                entity.setPw(data.getPw());
+            }
+        }
+        if(data.getNickname() != null) {
+            if(memberInfoRepository.countByNickname(data.getNickname()) == 1) {
+                return MessageVO.builder()
+                        .key("error_nickname")
+                        .message("중복 닉네임입니다.")
+                        .code(HttpStatus.BAD_REQUEST)
+                        .build();
+            }
+            else if(data.getNickname().equals("") || !Pattern.matches(namePattern, data.getNickname())) {
+                return MessageVO.builder()
+                        .key("error_nickname")
+                        .message("닉네임을 다시 확인해주세요. (공백 혹은 특수문자 사용 불가)")
+                        .code(HttpStatus.BAD_REQUEST)
+                        .build();
+            }
+            else {
+                entity.setNickname(data.getNickname());
+            }
+        }
+        if(data.getEmail() != null) {
+            if(memberInfoRepository.countByEmail(data.getEmail()) == 1) {
+                return MessageVO.builder()
+                        .key("error_email")
+                        .message("중복 이메일입니다.")
+                        .code(HttpStatus.BAD_REQUEST)
+                        .build();
+            }
+            else if(data.getEmail().equals("") || !Pattern.matches(emailPattern, data.getEmail())) {
+                return MessageVO.builder()
+                        .key("error_email")
+                        .message("이메일을 다시 확인해주세요.")
+                        .code(HttpStatus.BAD_REQUEST)
+                        .build();
+            }
+            else {
+                entity.setEmail(data.getEmail());
+            }
+        }
+        memberInfoRepository.save(entity);
+        return MessageVO.builder()
+                .key(entity.getMemberId())
+                .message("수정되었습니다.")
+                .code(HttpStatus.OK)
+                .build();
+    }
+
+    public MessageVO findMemberId(String email) {
+        MemberInfoEntity entity = memberInfoRepository.findByEmail(email);
+        if(entity == null) {
+            return  MessageVO.builder()
+                    .key("error")
+                    .message("존재하지 않는 회원입니다.")
+                    .code(HttpStatus.BAD_REQUEST)
+                    .build();
+        }
+        return MessageVO.builder()
+                .key(entity.getMemberId())
+                .message("회원님의 아이디는 key값 입니다.")
+                .code(HttpStatus.OK)
+                .build();
+    }
+
+    public MessageVO findMemberPw(MemberFindPw data) {
+        Long entity = memberInfoRepository.countByMemberIdAndNameAndEmail(data.getId(), data.getName(), data.getEmail());
+        if(entity == 0) {
+            return  MessageVO.builder()
+                    .key("error")
+                    .message("존재하지 않는 회원입니다.")
+                    .code(HttpStatus.BAD_REQUEST)
+                    .build();
+        }
+        int leftLimit = 48;
+        int rightLimit = 122;
+        int targetStringLength = 10;
+        Random random = new Random();
+        String password = random.ints(leftLimit,rightLimit + 1)
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                .limit(targetStringLength)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+        SimpleMailMessage message = new SimpleMailMessage();
+        MemberInfoEntity member = memberInfoRepository.findByMemberId(data.getId());
+        message.setTo(data.getEmail());
+        message.setSubject("임시 비밀번호 입니다.");
+        message.setText("회원님의 임시 비밀번호는"+password+"입니다.");
+        javaMailSender.send(message);
+        member.setPw(encoder.encode(password));
+        memberInfoRepository.save(member);
+        return MessageVO.builder()
+                .key(member.getMemberId())
+                .message("임시 비밀번호를 메일로 보냈습니다.")
+                .code(HttpStatus.OK)
                 .build();
     }
 }

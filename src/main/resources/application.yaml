@@ -2,13 +2,8 @@ server:
   port: 9998
 
 spring:
-  profiles:
-    include: security
-  servlet:
-    multipart:
-      enabled: true
-      max-file-size: 100MB
-      max-request-size: 110MB
+  datasource:
+    security
 
 community:
   file:
