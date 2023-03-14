@@ -25,6 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class WebSecurityConfig {
     private final JwtTokenProvider jwtTokenProvider;
+    final String[] permitAll = {"/api/members/login", "/api/members/findId", "/api/members/findPw"};
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors().and()
@@ -32,7 +33,7 @@ public class WebSecurityConfig {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and().authorizeHttpRequests()
                 .requestMatchers("/api/admins/**").hasRole("ADMIN")
-                .requestMatchers("/api/members/**").permitAll()
+                .requestMatchers(permitAll).permitAll()
                 .anyRequest().authenticated()
                 .and().exceptionHandling().authenticationEntryPoint(authenticationEntryPoint()).accessDeniedHandler(accessDeniedHandler())
                 .and()

@@ -24,7 +24,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(401);
         Map<String, Object> errorJson = new LinkedHashMap<>();
-        errorJson.put("timestamp", LocalDate.now());
+        errorJson.put("timestamp", Instant.now().toEpochMilli());
         errorJson.put("status", HttpStatus.valueOf(401).toString());
         errorJson.put("message", "This Service needs login");
         PrintWriter writer = response.getWriter();

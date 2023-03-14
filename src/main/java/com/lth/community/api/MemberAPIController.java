@@ -26,7 +26,7 @@ public class MemberAPIController {
     }
 
     @PostMapping("")
-    public ResponseEntity<MessageVO> postMemberJoin(@RequestBody MemberJoinVO data) throws Exception {
+    public ResponseEntity<MessageVO> postMemberJoin(@RequestBody MemberJoinVO data) {
         MessageVO response = memberService.memberJoin(data);
         return new ResponseEntity<>(response, response.getCode());
     }
@@ -42,12 +42,12 @@ public class MemberAPIController {
         return new ResponseEntity<>(response, response.getCode());
     }
 
-    @GetMapping("findId")
+    @GetMapping("/findId")
     public ResponseEntity<MessageVO> findMemberId(@RequestParam String email) {
         MessageVO response = memberService.findMemberId(email);
         return new ResponseEntity<>(response, response.getCode());
     }
-    @GetMapping("findPw")
+    @GetMapping("/findPw")
     public ResponseEntity<MessageVO> findMemberPw(@RequestBody MemberFindPwVO data) {
         MessageVO response = memberService.findMemberPw(data);
         return new ResponseEntity<>(response, response.getCode());

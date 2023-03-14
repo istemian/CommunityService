@@ -27,8 +27,7 @@ public class AdminService {
                     .status(create.get(i).getStatus())
                     .role(create.get(i).getRole())
                     .createDt(create.get(i).getCreateDt())
-                    .suspensionDt(create.get(i).getSuspensionDt())
-                    .suspensionReason(create.get(i).getSuspensionReason())
+                    .suspensionDt(create.get(i).getSuspension())
                     .deleteDt(create.get(i).getDeleteDt())
                     .build();
             allMember.add(allMemberCreate);

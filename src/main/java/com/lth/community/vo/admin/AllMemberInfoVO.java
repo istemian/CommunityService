@@ -1,5 +1,7 @@
 package com.lth.community.vo.admin;
 
+import com.lth.community.entity.DeleteMemberInfoEntity;
+import com.lth.community.entity.SuspensionMemberInfoEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,7 +22,6 @@ public class AllMemberInfoVO {
     private Integer status;
     private String role;
     private LocalDateTime createDt;
-    private LocalDateTime suspensionDt;
-    private String suspensionReason;
-    private LocalDateTime deleteDt;
+    private SuspensionMemberInfoEntity suspensionDt;
+    private DeleteMemberInfoEntity deleteDt;
 }

@@ -1,14 +1,9 @@
 package com.lth.community.entity;
 
+import jakarta.persistence.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +12,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashSet;
@@ -42,9 +36,9 @@ public class MemberInfoEntity implements UserDetails {
   @Column(name = "member_role") private String role;
   @Column(name = "member_refresh_token") private String refreshToken;
   @Column(name = "member_create_day") private LocalDateTime createDt;
-  @Column(name = "member_suspension_day") private LocalDateTime suspensionDt;
-  @Column(name = "member_suspension_reason") private String suspensionReason;
-  @Column(name = "member_delete_day") private LocalDateTime deleteDt;
+  @OneToOne(mappedBy = "member") private SuspensionMemberInfoEntity suspension;
+  @OneToOne(mappedBy = "member") private DeleteMemberInfoEntity deleteDt;
+
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {

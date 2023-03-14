@@ -1,6 +1,8 @@
 package com.lth.community.service;
 
+import com.lth.community.entity.DeleteMemberInfoEntity;
 import com.lth.community.entity.MemberInfoEntity;
+import com.lth.community.repository.DeleteMemberInfoRepository;
 import com.lth.community.repository.MemberInfoRepository;
 import com.lth.community.security.provider.JwtTokenProvider;
 import com.lth.community.security.service.CustomUserDetailService;
@@ -17,6 +19,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Random;
 import java.util.regex.Pattern;
@@ -30,6 +33,7 @@ public class MemberService {
     private final CustomUserDetailService userDetailService;
     private final PasswordEncoder encoder;
     private final JavaMailSender javaMailSender;
+    private final DeleteMemberInfoRepository deleteMemberInfoRepository;
 
     public MemberLoginResponseVO login(LoginVO login) throws Exception {
         MemberInfoEntity member = memberInfoRepository.findByMemberId(login.getId());
@@ -50,7 +54,14 @@ public class MemberService {
         else if (member.getStatus() == 2) {
             return  MemberLoginResponseVO.builder()
                     .status(false)
-                    .message("이용 정지된 사용자입니다.")
+                    .message("이용 정지된 회원입니다.")
+                    .code(HttpStatus.FORBIDDEN)
+                    .build();
+        }
+        else if (member.getStatus() == 3) {
+            return  MemberLoginResponseVO.builder()
+                    .status(false)
+                    .message("탈퇴한 회원입니다.")
                     .code(HttpStatus.FORBIDDEN)
                     .build();
         }
@@ -85,7 +96,7 @@ public class MemberService {
         }
     }
 
-    public MessageVO memberJoin(MemberJoinVO data) throws Exception {
+    public MessageVO memberJoin(MemberJoinVO data) {
         String idPattern ="^[0-9|a-z|A-Z]*$";
         String pwPattern ="^[0-9|a-z|A-Z|!@#$%^&*()]*$";
         String namePattern = "^[0-9|a-z|A-Z|ㄱ-ㅎ|ㅏ-ㅣ|가-힣]*$";
@@ -154,7 +165,6 @@ public class MemberService {
                 .name(data.getName())
                 .nickname(data.getNickname())
                 .email(data.getEmail())
-                .role("USER")
                 .createDt(LocalDateTime.now())
                 .build();
         memberInfoRepository.save(entity);
@@ -167,8 +177,10 @@ public class MemberService {
 
     public MessageVO deleteMember(String id) {
         MemberInfoEntity entity = memberInfoRepository.findByMemberId(id);
-        entity.setDeleteDt(LocalDateTime.now());
+        entity.setStatus(3);
+        DeleteMemberInfoEntity delete = new DeleteMemberInfoEntity(null, LocalDate.now(), entity);
         memberInfoRepository.save(entity);
+        deleteMemberInfoRepository.save(delete);
         return MessageVO.builder()
                 .key(entity.getMemberId())
                 .message("삭제되었습니다.")
@@ -277,7 +289,7 @@ public class MemberService {
         MemberInfoEntity member = memberInfoRepository.findByMemberId(data.getId());
         message.setTo(data.getEmail());
         message.setSubject("임시 비밀번호 입니다.");
-        message.setText("회원님의 임시 비밀번호는"+password+"입니다.");
+        message.setText("회원님의 임시 비밀번호는 "+password+" 입니다.");
         javaMailSender.send(message);
         member.setPw(encoder.encode(password));
         memberInfoRepository.save(member);

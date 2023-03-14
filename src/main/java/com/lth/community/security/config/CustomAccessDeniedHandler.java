@@ -24,7 +24,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(403);
         Map<String, Object> errorJson = new LinkedHashMap<>();
-        errorJson.put("timestamp", LocalDate.now());
+        errorJson.put("timestamp", Instant.now().toEpochMilli());
         errorJson.put("status", HttpStatus.valueOf(403).toString());
         errorJson.put("message", "No Permission");
         PrintWriter writer = response.getWriter();
