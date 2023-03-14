@@ -178,6 +178,7 @@ public class MemberService {
     public MessageVO deleteMember(String id) {
         MemberInfoEntity entity = memberInfoRepository.findByMemberId(id);
         entity.setStatus(3);
+        entity.setRefreshToken(null);
         DeleteMemberInfoEntity delete = new DeleteMemberInfoEntity(null, LocalDate.now(), entity);
         memberInfoRepository.save(entity);
         deleteMemberInfoRepository.save(delete);

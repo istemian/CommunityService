@@ -36,9 +36,6 @@ public class MemberInfoEntity implements UserDetails {
   @Column(name = "member_role") private String role;
   @Column(name = "member_refresh_token") private String refreshToken;
   @Column(name = "member_create_day") private LocalDateTime createDt;
-  @OneToOne(mappedBy = "member") private SuspensionMemberInfoEntity suspension;
-  @OneToOne(mappedBy = "member") private DeleteMemberInfoEntity deleteDt;
-
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
