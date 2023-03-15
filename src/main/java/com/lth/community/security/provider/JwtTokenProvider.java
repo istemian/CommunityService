@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 @Component
 public class JwtTokenProvider {
     private final Key key;
-    private final Integer tokenExpireMinutes = 3600;
-    private final Integer refreshExpireMinutes = 43200;
+    private final Integer tokenExpireMinutes = 1;
+    private final Integer refreshExpireMinutes = 10;
     public JwtTokenProvider(@Value("${jwt.secretKey}") String secretKey) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
@@ -34,7 +34,7 @@ public class JwtTokenProvider {
         Date refreshExpires = new Date((new Date()).getTime()+refreshExpireMinutes*60*1000);
         String accessToken = Jwts.builder().setSubject(authentication.getName()).claim("auth", authorities).setExpiration(expires)
                 .signWith(key, SignatureAlgorithm.HS256).compact();
-        String refreshToken = Jwts.builder().setSubject(authentication.getName()).setExpiration(refreshExpires)
+        String refreshToken = Jwts.builder().setExpiration(refreshExpires)
                 .signWith(key, SignatureAlgorithm.HS256).compact();
         return TokenVO.builder().grantType("Bearer").accessToken(accessToken).refreshToken(refreshToken).build();
     }

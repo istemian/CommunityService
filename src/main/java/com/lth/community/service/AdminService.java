@@ -1,8 +1,10 @@
 package com.lth.community.service;
 
+import com.lth.community.entity.BoardInfoEntity;
 import com.lth.community.entity.DeleteMemberInfoEntity;
 import com.lth.community.entity.MemberInfoEntity;
 import com.lth.community.entity.BanMemberInfoEntity;
+import com.lth.community.repository.BoardInfoRepository;
 import com.lth.community.repository.DeleteMemberInfoRepository;
 import com.lth.community.repository.MemberInfoRepository;
 import com.lth.community.repository.BanMemberInfoRepository;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +26,7 @@ public class AdminService {
     private final MemberInfoRepository memberInfoRepository;
     private final BanMemberInfoRepository banMemberInfoRepository;
     private final DeleteMemberInfoRepository deleteMemberInfoRepository;
+    private final BoardInfoRepository boardInfoRepository;
 
     public List<AllMemberInfoVO> allMemberList() {
         List<MemberInfoEntity> create = memberInfoRepository.findAll();
@@ -121,6 +125,23 @@ public class AdminService {
         return MessageVO.builder()
                 .key(banMember.getMemberId())
                 .message(banMember.getMemberId()+"회원이 정지되었습니다."+"( 사유 : "+data.getReason()+" / "+LocalDate.now().plusDays(data.getEndDt())+"까지 )")
+                .code(HttpStatus.OK)
+                .build();
+    }
+
+    public MessageVO deletePost(Long no) throws Exception {
+        BoardInfoEntity delete = boardInfoRepository.findBySeq(no);
+        if(delete == null) {
+            return MessageVO.builder()
+                    .key("error")
+                    .message("글이 존재하지 않습니다.")
+                    .code(HttpStatus.BAD_REQUEST)
+                    .build();
+        }
+        boardInfoRepository.delete(delete);
+        return MessageVO.builder()
+                .key(delete.getTitle())
+                .message("삭제되었습니다.")
                 .code(HttpStatus.OK)
                 .build();
     }

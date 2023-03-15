@@ -27,4 +27,10 @@ public class AdminAPIController {
         MessageVO response = adminService.banMember(data);
         return new ResponseEntity<>(response, response.getCode());
     }
+
+    @DeleteMapping("/post/{no}")
+    public  ResponseEntity<MessageVO> banMember(@PathVariable Long no) throws Exception {
+        MessageVO response = adminService.deletePost(no);
+        return new ResponseEntity<>(response, response.getCode());
+    }
 }
