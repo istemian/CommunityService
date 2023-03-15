@@ -34,7 +34,7 @@ public class JwtTokenProvider {
         Date refreshExpires = new Date((new Date()).getTime()+refreshExpireMinutes*60*1000);
         String accessToken = Jwts.builder().setSubject(authentication.getName()).claim("auth", authorities).setExpiration(expires)
                 .signWith(key, SignatureAlgorithm.HS256).compact();
-        String refreshToken = Jwts.builder().setExpiration(refreshExpires)
+        String refreshToken = Jwts.builder().setSubject(authentication.getName()).setExpiration(refreshExpires)
                 .signWith(key, SignatureAlgorithm.HS256).compact();
         return TokenVO.builder().grantType("Bearer").accessToken(accessToken).refreshToken(refreshToken).build();
     }

@@ -35,7 +35,7 @@ public class MemberService {
     private final JavaMailSender javaMailSender;
     private final DeleteMemberInfoRepository deleteMemberInfoRepository;
 
-    public MemberLoginResponseVO login(LoginVO login) throws Exception {
+    public MemberLoginResponseVO login(LoginVO login) {
         MemberInfoEntity member = memberInfoRepository.findByMemberId(login.getId());
         if(member == null) {
             return  MemberLoginResponseVO.builder()
@@ -252,8 +252,8 @@ public class MemberService {
                 .build();
     }
 
-    public MessageVO findMemberId(String email) {
-        MemberInfoEntity entity = memberInfoRepository.findByEmail(email);
+    public MessageVO findMemberId(MemberFindIdVO email) {
+        MemberInfoEntity entity = memberInfoRepository.findByEmail(email.getEmail());
         if(entity == null) {
             return  MessageVO.builder()
                     .key("error")
@@ -263,7 +263,7 @@ public class MemberService {
         }
         return MessageVO.builder()
                 .key(entity.getMemberId())
-                .message("회원님의 아이디는 key값 입니다.")
+                .message("회원님의 아이디는 "+entity.getMemberId()+" 입니다.")
                 .code(HttpStatus.OK)
                 .build();
     }

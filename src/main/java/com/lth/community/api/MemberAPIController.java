@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 public class MemberAPIController {
     private final MemberService memberService;
     @PostMapping("/login")
-    public ResponseEntity<MemberLoginResponseVO> postMemberLogin(@RequestBody LoginVO login) throws Exception {
+    public ResponseEntity<MemberLoginResponseVO> postMemberLogin(@RequestBody LoginVO login) {
         MemberLoginResponseVO response = memberService.login(login);
         return new ResponseEntity<>(response, response.getCode());
     }
@@ -42,12 +42,12 @@ public class MemberAPIController {
         return new ResponseEntity<>(response, response.getCode());
     }
 
-    @GetMapping("/findId")
-    public ResponseEntity<MessageVO> findMemberId(@RequestParam String email) {
+    @PostMapping("/findId")
+    public ResponseEntity<MessageVO> findMemberId(@RequestBody MemberFindIdVO email) {
         MessageVO response = memberService.findMemberId(email);
         return new ResponseEntity<>(response, response.getCode());
     }
-    @GetMapping("/findPw")
+    @PostMapping("/findPw")
     public ResponseEntity<MessageVO> findMemberPw(@RequestBody MemberFindPwVO data) {
         MessageVO response = memberService.findMemberPw(data);
         return new ResponseEntity<>(response, response.getCode());

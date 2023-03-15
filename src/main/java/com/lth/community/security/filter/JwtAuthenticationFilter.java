@@ -1,6 +1,7 @@
 package com.lth.community.security.filter;
 
 import com.lth.community.security.provider.JwtTokenProvider;
+import com.lth.community.security.vo.TokenVO;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -31,5 +32,4 @@ public class JwtAuthenticationFilter extends GenericFilter {
         }
         return null;
     }
-
 }
