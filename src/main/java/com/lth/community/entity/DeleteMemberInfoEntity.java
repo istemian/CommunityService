@@ -20,5 +20,5 @@ public class DeleteMemberInfoEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "delete_seq") private Long seq;
     @Column(name = "delete_day") private LocalDate deleteDt;
-    @OneToOne @JoinColumn(name = "delete_member_seq") MemberInfoEntity member;
+    @OneToOne(cascade = CascadeType.ALL) @JoinColumn(name = "delete_member_seq") MemberInfoEntity member;
 }

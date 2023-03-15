@@ -26,7 +26,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class WebSecurityConfig {
     private final JwtTokenProvider jwtTokenProvider;
-    final String[] permitAll = {"/api/members/**"};
+    final String[] permitAll = {"/api/members/**", "/api/boards/non"};
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors().and()
