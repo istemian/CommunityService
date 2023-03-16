@@ -104,56 +104,56 @@ public class MemberService {
 
         if(memberInfoRepository.countByMemberId(data.getId()) == 1) {
             return MessageVO.builder()
-                    .key("error_id")
+                    .status(false)
                     .message("중복 아이디입니다.")
                     .code(HttpStatus.BAD_REQUEST)
                     .build();
         }
         else if(data.getId() == null || data.getId().equals("") || !Pattern.matches(idPattern, data.getId())) {
             return MessageVO.builder()
-                    .key("error_id")
+                    .status(false)
                     .message("아이디를 다시 확인해주세요. (공백 혹은 특수문자 사용 불가)")
                     .code(HttpStatus.BAD_REQUEST)
                     .build();
         }
         else if(data.getPw() == null || data.getPw().equals("") || !Pattern.matches(pwPattern, data.getPw()) || data.getPw().length() < 8) {
             return MessageVO.builder()
-                    .key("error_password")
+                    .status(false)
                     .message("비밀번호를 다시 확인해주세요. (8자리 이상, 공백 불가)")
                     .code(HttpStatus.BAD_REQUEST)
                     .build();
         }
         else if(data.getName() == null || data.getName().equals("") || !Pattern.matches(namePattern, data.getName())) {
             return MessageVO.builder()
-                    .key("error_name")
+                    .status(false)
                     .message("이름을 다시 확인해주세요. (공백 혹은 특수문자 사용 불가)")
                     .code(HttpStatus.BAD_REQUEST)
                     .build();
         }
         else if(memberInfoRepository.countByNickname(data.getNickname()) == 1) {
             return MessageVO.builder()
-                    .key("error_nickname")
+                    .status(false)
                     .message("중복 닉네임입니다.")
                     .code(HttpStatus.BAD_REQUEST)
                     .build();
         }
         else if(data.getNickname() == null || data.getNickname().equals("") || !Pattern.matches(namePattern, data.getNickname())) {
             return MessageVO.builder()
-                    .key("error_nickname")
+                    .status(false)
                     .message("닉네임을 다시 확인해주세요. (공백 혹은 특수문자 사용 불가)")
                     .code(HttpStatus.BAD_REQUEST)
                     .build();
         }
         else if(memberInfoRepository.countByEmail(data.getEmail()) == 1) {
             return MessageVO.builder()
-                    .key("error_email")
+                    .status(false)
                     .message("중복 이메일입니다.")
                     .code(HttpStatus.BAD_REQUEST)
                     .build();
         }
         else if(data.getEmail() == null || data.getEmail().equals("") || !Pattern.matches(emailPattern, data.getEmail())) {
             return MessageVO.builder()
-                    .key("error_email")
+                    .status(false)
                     .message("이메일을 다시 확인해주세요.")
                     .code(HttpStatus.BAD_REQUEST)
                     .build();
@@ -169,7 +169,7 @@ public class MemberService {
                 .build();
         memberInfoRepository.save(entity);
         return MessageVO.builder()
-                .key(data.getId())
+                .status(true)
                 .message("가입이 완료되었습니다.")
                 .code(HttpStatus.CREATED)
                 .build();
@@ -183,7 +183,7 @@ public class MemberService {
         memberInfoRepository.save(entity);
         deleteMemberInfoRepository.save(delete);
         return MessageVO.builder()
-                .key(entity.getMemberId())
+                .status(true)
                 .message("삭제되었습니다.")
                 .code(HttpStatus.OK)
                 .build();
@@ -197,7 +197,7 @@ public class MemberService {
         if(data.getPw() != null) {
             if(data.getPw().equals("") || !Pattern.matches(pwPattern, data.getPw()) || data.getPw().length() < 8) {
                 return MessageVO.builder()
-                        .key("error_password")
+                        .status(false)
                         .message("비밀번호를 다시 확인해주세요. (8자리 이상, 공백 불가)")
                         .code(HttpStatus.BAD_REQUEST)
                         .build();
@@ -209,14 +209,14 @@ public class MemberService {
         if(data.getNickname() != null) {
             if(memberInfoRepository.countByNickname(data.getNickname()) == 1) {
                 return MessageVO.builder()
-                        .key("error_nickname")
+                        .status(false)
                         .message("중복 닉네임입니다.")
                         .code(HttpStatus.BAD_REQUEST)
                         .build();
             }
             else if(data.getNickname().equals("") || !Pattern.matches(namePattern, data.getNickname())) {
                 return MessageVO.builder()
-                        .key("error_nickname")
+                        .status(false)
                         .message("닉네임을 다시 확인해주세요. (공백 혹은 특수문자 사용 불가)")
                         .code(HttpStatus.BAD_REQUEST)
                         .build();
@@ -228,14 +228,14 @@ public class MemberService {
         if(data.getEmail() != null) {
             if(memberInfoRepository.countByEmail(data.getEmail()) == 1) {
                 return MessageVO.builder()
-                        .key("error_email")
+                        .status(false)
                         .message("중복 이메일입니다.")
                         .code(HttpStatus.BAD_REQUEST)
                         .build();
             }
             else if(data.getEmail().equals("") || !Pattern.matches(emailPattern, data.getEmail())) {
                 return MessageVO.builder()
-                        .key("error_email")
+                        .status(false)
                         .message("이메일을 다시 확인해주세요.")
                         .code(HttpStatus.BAD_REQUEST)
                         .build();
@@ -246,7 +246,7 @@ public class MemberService {
         }
         memberInfoRepository.save(entity);
         return MessageVO.builder()
-                .key(entity.getMemberId())
+                .status(true)
                 .message("수정되었습니다.")
                 .code(HttpStatus.OK)
                 .build();
@@ -256,13 +256,13 @@ public class MemberService {
         MemberInfoEntity entity = memberInfoRepository.findByEmail(email.getEmail());
         if(entity == null) {
             return  MessageVO.builder()
-                    .key("error")
+                    .status(false)
                     .message("존재하지 않는 회원입니다.")
                     .code(HttpStatus.BAD_REQUEST)
                     .build();
         }
         return MessageVO.builder()
-                .key(entity.getMemberId())
+                .status(true)
                 .message("회원님의 아이디는 "+entity.getMemberId()+" 입니다.")
                 .code(HttpStatus.OK)
                 .build();
@@ -272,7 +272,7 @@ public class MemberService {
         Long entity = memberInfoRepository.countByMemberIdAndNameAndEmail(data.getId(), data.getName(), data.getEmail());
         if(entity == 0) {
             return  MessageVO.builder()
-                    .key("error")
+                    .status(false)
                     .message("존재하지 않는 회원입니다.")
                     .code(HttpStatus.BAD_REQUEST)
                     .build();
@@ -295,7 +295,7 @@ public class MemberService {
         member.setPw(encoder.encode(password));
         memberInfoRepository.save(member);
         return MessageVO.builder()
-                .key(member.getMemberId())
+                .status(true)
                 .message("임시 비밀번호를 메일로 보냈습니다.")
                 .code(HttpStatus.OK)
                 .build();

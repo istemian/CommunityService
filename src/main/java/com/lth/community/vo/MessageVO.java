@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 @NoArgsConstructor
 @Builder
 public class MessageVO {
-    private String key;
+    private Boolean status;
     private String message;
     private HttpStatus code;
 }
