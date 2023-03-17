@@ -3,6 +3,7 @@ package com.lth.community.api;
 import com.lth.community.service.BoardService;
 import com.lth.community.vo.MessageVO;
 import com.lth.community.vo.board.GetBoardVO;
+import com.lth.community.vo.board.UpdatePostNonMember;
 import com.lth.community.vo.board.WritingMemberVO;
 import com.lth.community.vo.board.WritingNonMemberVO;
 import lombok.RequiredArgsConstructor;
@@ -47,5 +48,17 @@ public class BoardAPIController {
     @GetMapping("")
     public ResponseEntity<GetBoardVO> getBoard(@RequestParam @Nullable String keyword, @PageableDefault(size = 10, sort = "seq", direction = Sort.Direction.DESC) Pageable pageable) {
         return new ResponseEntity<>(boardService.getBoard(keyword, pageable), HttpStatus.OK);
+    }
+
+    @PatchMapping("/{no}")
+    public ResponseEntity<MessageVO> updatePost(@RequestBody WritingMemberVO data, Authentication authentication, @PathVariable Long no) {
+        MessageVO response = boardService.update(data, authentication.getName(), no);
+        return new ResponseEntity<>(response, response.getCode());
+    }
+
+    @PatchMapping("/non/{no}")
+    public ResponseEntity<MessageVO> updatePost(@RequestBody UpdatePostNonMember data, @PathVariable Long no) {
+        MessageVO response = boardService.nonUpdate(data, no);
+        return new ResponseEntity<>(response, response.getCode());
     }
 }

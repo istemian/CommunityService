@@ -5,10 +5,7 @@ import com.lth.community.entity.MemberInfoEntity;
 import com.lth.community.repository.BoardInfoRepository;
 import com.lth.community.repository.MemberInfoRepository;
 import com.lth.community.vo.MessageVO;
-import com.lth.community.vo.board.BoardInfoVO;
-import com.lth.community.vo.board.GetBoardVO;
-import com.lth.community.vo.board.WritingMemberVO;
-import com.lth.community.vo.board.WritingNonMemberVO;
+import com.lth.community.vo.board.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -161,13 +158,99 @@ public class BoardService {
                 info.add(infoMake);
             }
         }
-        GetBoardVO list = GetBoardVO.builder()
+        return GetBoardVO.builder()
                 .list(info)
                 .total(board.getTotalElements())
                 .totalPage(board.getTotalPages())
                 .currentPage(board.getNumber())
                 .build();
-        return list;
+
+    }
+
+    public MessageVO update(WritingMemberVO data, String memberId, Long no) {
+        BoardInfoEntity post = boardInfoRepository.findBySeq(no);
+        if(post == null) {
+            return MessageVO.builder()
+                    .status(false)
+                    .message("존재하지 않는 글입니다.")
+                    .code(HttpStatus.BAD_REQUEST)
+                    .build();
+        }
+        Boolean check = checkId(memberId, post);
+        if(check) {
+            if(data.getTitle() == null || data.getTitle().equals("")) {
+                post.setTitle(post.getTitle());
+                post.setContent(data.getContent());
+            }
+            if(data.getContent() == null || data.getContent().equals("")) {
+                post.setTitle(data.getTitle());
+                post.setContent(post.getContent());
+            }
+            post.setModifiedDt(LocalDateTime.now());
+            boardInfoRepository.save(post);
+            return MessageVO.builder()
+                    .status(true)
+                    .message("수정되었습니다.")
+                    .code(HttpStatus.OK)
+                    .build();
+        }
+        else {
+            String message = null;
+            if(!check) {
+                message = "본인의 글이 아닙니다.";
+            }
+            else {
+                message = "수정에 실패했습니다.";
+            }
+            return MessageVO.builder()
+                    .status(false)
+                    .message(message)
+                    .code(HttpStatus.BAD_REQUEST)
+                    .build();
+        }
+    }
+
+    public MessageVO nonUpdate(UpdatePostNonMember data, Long no) {
+        BoardInfoEntity post = boardInfoRepository.findBySeq(no);
+        String message = null;
+        if(post == null) {
+            return MessageVO.builder()
+                    .status(false)
+                    .message("존재하지 않는 글입니다.")
+                    .code(HttpStatus.BAD_REQUEST)
+                    .build();
+        }
+        else if(data.getPw() == null || !data.getPw().equals(post.getPw())) {
+            return MessageVO.builder()
+                    .status(false)
+                    .message("비밀번호를 확인해주세요.")
+                    .code(HttpStatus.BAD_REQUEST)
+                    .build();
+        }
+        if(data.getPw().equals(post.getPw())) {
+            if(data.getTitle() == null || data.getTitle().equals("")) {
+                post.setTitle(post.getTitle());
+                post.setContent(data.getContent());
+            }
+            if(data.getContent() == null || data.getContent().equals("")) {
+                post.setTitle(data.getTitle());
+                post.setContent(post.getContent());
+            }
+            post.setModifiedDt(LocalDateTime.now());
+            boardInfoRepository.save(post);
+            return MessageVO.builder()
+                    .status(true)
+                    .message("수정되었습니다.")
+                    .code(HttpStatus.OK)
+                    .build();
+        }
+        else {
+            return MessageVO.builder()
+                    .status(false)
+                    .message("수정 실패했습니다.")
+                    .code(HttpStatus.BAD_REQUEST)
+                    .build();
+        }
     }
 
     public Boolean checkId(String memberId, BoardInfoEntity board) {
