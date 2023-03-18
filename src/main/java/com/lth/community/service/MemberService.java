@@ -184,7 +184,7 @@ public class MemberService {
         deleteMemberInfoRepository.save(delete);
         return MessageVO.builder()
                 .status(true)
-                .message("삭제되었습니다.")
+                .message("회원 탈퇴가 완료되었습니다. (작성한 게시글 및 댓글은 일주일 후 사라집니다.)")
                 .code(HttpStatus.OK)
                 .build();
     }

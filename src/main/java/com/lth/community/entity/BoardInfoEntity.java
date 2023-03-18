@@ -30,4 +30,6 @@ public class BoardInfoEntity {
     @ManyToOne @JoinColumn(name = "board_member_seq") private MemberInfoEntity member;
     @OneToMany(mappedBy = "board", cascade = CascadeType.REMOVE)
     private List<FileInfoEntity> files = new ArrayList<>();
+    @OneToMany(mappedBy = "board", cascade = CascadeType.REMOVE)
+    private List<CommentInfoEntity> comments = new ArrayList<>();
 }

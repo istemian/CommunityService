@@ -16,6 +16,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping("/api/boards")
 @RequiredArgsConstructor
@@ -40,7 +42,7 @@ public class BoardAPIController {
     }
 
     @DeleteMapping("/non/{no}")
-    public ResponseEntity<MessageVO> nonDeletePost(@PathVariable Long no, @RequestBody DeletePostNonMember data) {
+    public ResponseEntity<MessageVO> nonDeletePost(@PathVariable Long no, @RequestBody DeletePostNonMemberVO data) {
         MessageVO response = boardService.nonDelete(no, data);
         return new ResponseEntity<>(response, response.getCode());
     }
@@ -62,8 +64,19 @@ public class BoardAPIController {
         return new ResponseEntity<>(response, response.getCode());
     }
 
-    @GetMapping("/{file}")
+    @GetMapping("/file/{file}")
     public ResponseEntity<Resource> getFile(@PathVariable String file ,HttpServletRequest request) throws Exception {
         return boardService.getFile(file, request);
+    }
+
+    @GetMapping("/{no}/detail")
+    public ResponseEntity<BoardDetailVO> getBoard(@PathVariable Long no) {
+        return new ResponseEntity<>(boardService.getDetail(no), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/file/{file}")
+    public ResponseEntity<MessageVO> deleteFile(@PathVariable String file) throws IOException {
+        MessageVO response = boardService.deleteImage(file);
+        return new ResponseEntity<>(response, response.getCode());
     }
 }

@@ -38,6 +38,8 @@ public class MemberInfoEntity implements UserDetails {
   private List<BoardInfoEntity> board = new ArrayList<>();
   @OneToOne(mappedBy = "member", cascade = CascadeType.REMOVE)
   private BanMemberInfoEntity banMember;
+  @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE)
+  private List<CommentInfoEntity> comments = new ArrayList<>();
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {

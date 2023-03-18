@@ -8,6 +8,8 @@ import com.lth.community.repository.FileRepository;
 import com.lth.community.repository.MemberInfoRepository;
 import com.lth.community.vo.MessageVO;
 import com.lth.community.vo.board.*;
+import com.lth.community.vo.comment.GetCommentVO;
+import com.lth.community.vo.file.GetFileVO;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -149,8 +152,15 @@ public class BoardService {
 
     public MessageVO delete(String memberId, Long no) {
         BoardInfoEntity board = boardInfoRepository.findBySeq(no);
-        Boolean check = checkId(memberId, board);
         MessageVO response = null;
+        if(board == null) {
+            response = MessageVO.builder()
+                    .status(false)
+                    .message("존재하지 않는 글입니다.")
+                    .code(HttpStatus.BAD_REQUEST)
+                    .build();
+        }
+        Boolean check = checkId(memberId, board);
         if(check) {
             boardInfoRepository.delete(board);
             response = MessageVO.builder()
@@ -169,11 +179,18 @@ public class BoardService {
         return response;
     }
 
-    public MessageVO nonDelete(Long no, DeletePostNonMember data) {
+    public MessageVO nonDelete(Long no, DeletePostNonMemberVO data) {
         BoardInfoEntity board = boardInfoRepository.findBySeq(no);
         MessageVO response = null;
         String message = null;
-        if(encoder.matches(data.getPw(), board.getPw())) {
+        if(board == null) {
+            response = MessageVO.builder()
+                    .status(false)
+                    .message("존재하지 않는 글입니다.")
+                    .code(HttpStatus.BAD_REQUEST)
+                    .build();
+        }
+        else if(encoder.matches(data.getPw(), board.getPw())) {
             boardInfoRepository.delete(board);
             response = MessageVO.builder()
                     .status(true)
@@ -340,6 +357,77 @@ public class BoardService {
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename*=\"" + URLEncoder.encode(filename, "UTF-8") + "\"")
                 .body(r);
+    }
+
+    public BoardDetailVO getDetail(Long no) {
+        BoardInfoEntity board = boardInfoRepository.findBySeq(no);
+        String commentNickname = null;
+        String boardNickname = null;
+        if(board == null) {
+            return null;
+        }
+        List<GetCommentVO> commentInfo = new ArrayList<>();
+        List<GetFileVO> fileInfo = new ArrayList<>();
+        if(board.getComments() != null) {
+            for(int i=0; i<board.getComments().size(); i++) {
+                if(board.getComments().get(i).getNickname() == null) {
+                    commentNickname = board.getComments().get(i).getMember().getNickname();
+                }
+                if(board.getComments().get(i).getMember() == null) {
+                    commentNickname = board.getComments().get(i).getNickname();
+                }
+                GetCommentVO commentMake = GetCommentVO.builder()
+                        .nickname(commentNickname)
+                        .comment(board.getComments().get(i).getContent())
+                        .createDt(board.getComments().get(i).getCreatDt())
+                        .build();
+                commentInfo.add(commentMake);
+            }
+        }
+        if(board.getFiles() != null) {
+            for(int i=0; i<board.getFiles().size(); i++) {
+                GetFileVO fileMake = new GetFileVO(board.getFiles().get(i).getFilename());
+                fileInfo.add(fileMake);
+            }
+        }
+        if(board.getMember() == null) {
+            boardNickname = board.getBoardId();
+        }
+        else if (board.getBoardId() == null) {
+            boardNickname = board.getMember().getNickname();
+        }
+        return BoardDetailVO.builder()
+                .no(board.getSeq())
+                .nickname(boardNickname)
+                .title(board.getTitle())
+                .content(board.getContent())
+                .creatDt(board.getCreatDt())
+                .modifiedDt(board.getModifiedDt())
+                .files(fileInfo)
+                .comments(commentInfo)
+                .build();
+    }
+
+    public MessageVO deleteImage(String uuid) throws IOException {
+        FileInfoEntity file = fileRepository.findByFilename(uuid);
+        if(file == null) {
+            return MessageVO.builder()
+                    .status(false)
+                    .message("존재하지 않는 파일입니다.")
+                    .code(HttpStatus.BAD_REQUEST)
+                    .build();
+        }
+        fileRepository.delete(file);
+
+        Path folderLocation = Paths.get(path);
+        Path targetFile = folderLocation.resolve(uuid);
+        Files.delete(targetFile);
+
+        return MessageVO.builder()
+                .status(true)
+                .message("파일이 삭제되었습니다.")
+                .code(HttpStatus.OK)
+                .build();
     }
 
     public Boolean checkId(String memberId, BoardInfoEntity board) {
