@@ -1,21 +1,35 @@
 package com.lth.community.service;
 
 import com.lth.community.entity.BoardInfoEntity;
+import com.lth.community.entity.FileInfoEntity;
 import com.lth.community.entity.MemberInfoEntity;
 import com.lth.community.repository.BoardInfoRepository;
+import com.lth.community.repository.FileRepository;
 import com.lth.community.repository.MemberInfoRepository;
 import com.lth.community.vo.MessageVO;
 import com.lth.community.vo.board.*;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 @Service
@@ -23,9 +37,13 @@ import java.util.regex.Pattern;
 public class BoardService {
     private final BoardInfoRepository boardInfoRepository;
     private final MemberInfoRepository memberInfoRepository;
+    private final FileRepository fileRepository;
+    private final PasswordEncoder encoder;
+    @Value("${file.files}") String path;
 
-    public MessageVO writing(String memberId, WritingMemberVO member) {
+    public MessageVO writing(String memberId, WritingMemberVO member, MultipartFile[] files) {
         MemberInfoEntity memberCheck = memberInfoRepository.findByMemberId(memberId);
+        Path folderLocation = Paths.get(path);
         if(member.getTitle() == null || member.getTitle().equals("") || member.getContent() == null || member.getContent().equals("")) {
             return MessageVO.builder()
                     .status(false)
@@ -33,13 +51,33 @@ public class BoardService {
                     .code(HttpStatus.BAD_REQUEST)
                     .build();
         }
-        BoardInfoEntity nonMemberPost = BoardInfoEntity.builder()
+        BoardInfoEntity memberPost = BoardInfoEntity.builder()
                 .title(member.getTitle())
                 .content(member.getContent())
                 .member(memberCheck)
                 .creatDt(LocalDateTime.now())
                 .build();
-        boardInfoRepository.save(nonMemberPost);
+        boardInfoRepository.save(memberPost);
+        if(files != null) {
+            for (int a = 0; a < files.length; a++) {
+                String originFileName = files[a].getOriginalFilename();
+                String[] split = originFileName.split("\\.");
+                String ext = split[split.length - 1];
+                String filename = "";
+                for (int i = 0; i < split.length - 1; i++) {
+                    filename += split[i];
+                }
+                String saveFilename = String.valueOf(UUID.randomUUID())+"."+ext;
+                Path targetFile = folderLocation.resolve(saveFilename);
+                try {
+                    Files.copy(files[a].getInputStream(), targetFile, StandardCopyOption.REPLACE_EXISTING);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                FileInfoEntity file = new FileInfoEntity(null, saveFilename, filename, memberPost);
+                fileRepository.save(file);
+            }
+        }
         return MessageVO.builder()
                 .status(true)
                 .message("글이 등록되었습니다.")
@@ -48,9 +86,10 @@ public class BoardService {
 
     }
 
-    public MessageVO nonWriting(WritingNonMemberVO nonMember) {
+    public MessageVO nonWriting(WritingNonMemberVO nonMember, MultipartFile[] files) {
         String namePattern = "^[0-9|a-z|A-Z|ㄱ-ㅎ|ㅏ-ㅣ|가-힣]*$";
         String pwPattern = "^[0-9|a-z|A-Z]*$";
+        Path folderLocation = Paths.get(path);
 
         if(nonMember.getId() == null || nonMember.getId().equals("") || nonMember.getPw() == null || nonMember.getPw().equals("") || nonMember.getTitle() == null || nonMember.getTitle().equals("") || nonMember.getContent() == null || nonMember.getContent().equals("")) {
             return MessageVO.builder()
@@ -75,12 +114,32 @@ public class BoardService {
         }
         BoardInfoEntity nonMemberPost = BoardInfoEntity.builder()
                 .boardId(nonMember.getId()+"(비회원)")
-                .pw(nonMember.getPw())
+                .pw(encoder.encode(nonMember.getPw()))
                 .title(nonMember.getTitle())
                 .content(nonMember.getContent())
                 .creatDt(LocalDateTime.now())
                 .build();
         boardInfoRepository.save(nonMemberPost);
+        if(files != null) {
+            for (int a = 0; a < files.length; a++) {
+                String originFileName = files[a].getOriginalFilename();
+                String[] split = originFileName.split("\\.");
+                String ext = split[split.length - 1];
+                String filename = "";
+                for (int i = 0; i < split.length - 1; i++) {
+                    filename += split[i];
+                }
+                String saveFilename = String.valueOf(UUID.randomUUID())+"."+ext;
+                Path targetFile = folderLocation.resolve(saveFilename);
+                try {
+                    Files.copy(files[a].getInputStream(), targetFile, StandardCopyOption.REPLACE_EXISTING);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                FileInfoEntity file = new FileInfoEntity(null, saveFilename, filename, nonMemberPost);
+                fileRepository.save(file);
+            }
+        }
         return MessageVO.builder()
                 .status(true)
                 .message("글이 등록되었습니다.")
@@ -110,10 +169,11 @@ public class BoardService {
         return response;
     }
 
-    public MessageVO nonDelete(Long no, String pw) {
+    public MessageVO nonDelete(Long no, DeletePostNonMember data) {
         BoardInfoEntity board = boardInfoRepository.findBySeq(no);
         MessageVO response = null;
-        if(board.getPw().equals(pw)) {
+        String message = null;
+        if(encoder.matches(data.getPw(), board.getPw())) {
             boardInfoRepository.delete(board);
             response = MessageVO.builder()
                     .status(true)
@@ -122,9 +182,15 @@ public class BoardService {
                     .build();
         }
         else {
+            if(!encoder.matches(data.getPw(), board.getPw())) {
+                message = "비밀번호가 일치하지 않습니다.";
+            }
+            else {
+                message = "삭제 실패했습니다.";
+            }
             response = MessageVO.builder()
                     .status(false)
-                    .message("삭제 실패했습니다.")
+                    .message(message)
                     .code(HttpStatus.BAD_REQUEST)
                     .build();
         }
@@ -135,7 +201,6 @@ public class BoardService {
         if(keyword == null) { keyword = ""; }
         Page<BoardInfoEntity> board = boardInfoRepository.findByTitleContains(keyword, pageable);
         List<BoardInfoVO> info = new ArrayList<>();
-        String nickname = null;
         for(int i=0; i<board.getTotalElements(); i++) {
             if (board.getContent().get(i).getBoardId() == null) {
                 BoardInfoVO infoMake = BoardInfoVO.builder()
@@ -252,6 +317,30 @@ public class BoardService {
                     .build();
         }
     }
+    public ResponseEntity<Resource> getFile(String filename, HttpServletRequest request) throws Exception {
+        Path folderLocation = Paths.get(path);
+        Path targetFile = folderLocation.resolve(filename);
+        Resource r = null;
+        try {
+            r = new UrlResource(targetFile.toUri());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        String contentType = null;
+        try {
+            contentType = request.getServletContext().getMimeType(r.getFile().getAbsolutePath());
+            if (contentType == null) {
+                contentType = "application/octet-stream";
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename*=\"" + URLEncoder.encode(filename, "UTF-8") + "\"")
+                .body(r);
+    }
 
     public Boolean checkId(String memberId, BoardInfoEntity board) {
         MemberInfoEntity member = memberInfoRepository.findByMemberId(memberId);
@@ -262,5 +351,4 @@ public class BoardService {
             return false;
         }
     }
-
 }

@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -25,5 +27,7 @@ public class BoardInfoEntity {
     @Column(name = "board_content") private String content;
     @Column(name = "board_create_day") private LocalDateTime creatDt;
     @Column(name = "board_modified_day") private LocalDateTime modifiedDt;
-    @ManyToOne(cascade = CascadeType.ALL) @JoinColumn(name = "board_member_seq") private MemberInfoEntity member;
+    @ManyToOne @JoinColumn(name = "board_member_seq") private MemberInfoEntity member;
+    @OneToMany(mappedBy = "board", cascade = CascadeType.REMOVE)
+    private List<FileInfoEntity> files = new ArrayList<>();
 }

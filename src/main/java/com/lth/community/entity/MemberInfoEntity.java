@@ -13,9 +13,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Data
 @AllArgsConstructor
@@ -36,6 +34,10 @@ public class MemberInfoEntity implements UserDetails {
   @Column(name = "member_role") private String role;
   @Column(name = "member_refresh_token") private String refreshToken;
   @Column(name = "member_create_day") private LocalDateTime createDt;
+  @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE)
+  private List<BoardInfoEntity> board = new ArrayList<>();
+  @OneToOne(mappedBy = "member", cascade = CascadeType.REMOVE)
+  private BanMemberInfoEntity banMember;
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {

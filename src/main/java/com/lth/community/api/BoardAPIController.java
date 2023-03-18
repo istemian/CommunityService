@@ -2,11 +2,10 @@ package com.lth.community.api;
 
 import com.lth.community.service.BoardService;
 import com.lth.community.vo.MessageVO;
-import com.lth.community.vo.board.GetBoardVO;
-import com.lth.community.vo.board.UpdatePostNonMember;
-import com.lth.community.vo.board.WritingMemberVO;
-import com.lth.community.vo.board.WritingNonMemberVO;
+import com.lth.community.vo.board.*;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -15,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/boards")
@@ -23,13 +23,13 @@ public class BoardAPIController {
     private final BoardService boardService;
 
     @PostMapping("")
-    public ResponseEntity<MessageVO> writingPost(Authentication authentication, @RequestBody WritingMemberVO member) {
-        MessageVO response = boardService.writing(authentication.getName(), member);
+    public ResponseEntity<MessageVO> writingPost(Authentication authentication, @RequestPart(required = false) MultipartFile[] files, WritingMemberVO member) {
+        MessageVO response = boardService.writing(authentication.getName(), member, files);
         return new ResponseEntity<>(response, response.getCode());
     }
     @PostMapping("/non")
-    public ResponseEntity<MessageVO> writingPostNonMember(@RequestBody WritingNonMemberVO nonMemberVO) {
-        MessageVO response = boardService.nonWriting(nonMemberVO);
+    public ResponseEntity<MessageVO> writingPostNonMember(@RequestPart(required = false) MultipartFile[] files, WritingNonMemberVO nonMemberVO) {
+        MessageVO response = boardService.nonWriting(nonMemberVO, files);
         return new ResponseEntity<>(response, response.getCode());
     }
 
@@ -39,9 +39,9 @@ public class BoardAPIController {
         return new ResponseEntity<>(response, response.getCode());
     }
 
-    @DeleteMapping("/non/{no}/{pw}")
-    public ResponseEntity<MessageVO> nonDeletePost(@PathVariable Long no, @PathVariable String pw) {
-        MessageVO response = boardService.nonDelete(no, pw);
+    @DeleteMapping("/non/{no}")
+    public ResponseEntity<MessageVO> nonDeletePost(@PathVariable Long no, @RequestBody DeletePostNonMember data) {
+        MessageVO response = boardService.nonDelete(no, data);
         return new ResponseEntity<>(response, response.getCode());
     }
 
@@ -60,5 +60,10 @@ public class BoardAPIController {
     public ResponseEntity<MessageVO> updatePost(@RequestBody UpdatePostNonMember data, @PathVariable Long no) {
         MessageVO response = boardService.nonUpdate(data, no);
         return new ResponseEntity<>(response, response.getCode());
+    }
+
+    @GetMapping("/{file}")
+    public ResponseEntity<Resource> getFile(@PathVariable String file ,HttpServletRequest request) throws Exception {
+        return boardService.getFile(file, request);
     }
 }

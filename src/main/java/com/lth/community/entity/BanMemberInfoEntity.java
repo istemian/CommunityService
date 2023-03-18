@@ -22,6 +22,6 @@ public class BanMemberInfoEntity {
     @Column(name = "ban_start_day") private LocalDate startDt;
     @Column(name = "ban_end_day") private LocalDate endDt;
     @Column(name = "ban_reason") private String reason;
-    @OneToOne(cascade = CascadeType.ALL) @JoinColumn(name = "ban_member_seq") private MemberInfoEntity member;
+    @OneToOne @JoinColumn(name = "ban_member_seq") private MemberInfoEntity member;
 
 }

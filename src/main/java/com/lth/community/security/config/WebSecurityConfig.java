@@ -34,7 +34,7 @@ public class WebSecurityConfig {
                 .and().authorizeHttpRequests()
                 .requestMatchers("/api/admins/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/members/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/boards/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/boards/**", "/api/boards/file/**").permitAll()
                 .requestMatchers("/api/boards/non/**").anonymous()
                 .anyRequest().authenticated()
                 .and().exceptionHandling().authenticationEntryPoint(authenticationEntryPoint()).accessDeniedHandler(accessDeniedHandler())
