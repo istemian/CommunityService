@@ -179,7 +179,7 @@ public class MemberService {
         MemberInfoEntity entity = memberInfoRepository.findByMemberId(id);
         entity.setStatus(3);
         entity.setRefreshToken(null);
-        DeleteMemberInfoEntity delete = new DeleteMemberInfoEntity(null, LocalDate.now(), entity);
+        DeleteMemberInfoEntity delete = new DeleteMemberInfoEntity(null, LocalDate.now().plusDays(7), entity);
         memberInfoRepository.save(entity);
         deleteMemberInfoRepository.save(delete);
         return MessageVO.builder()
@@ -203,7 +203,7 @@ public class MemberService {
                         .build();
             }
             else {
-                entity.setPw(data.getPw());
+                entity.setPw(encoder.encode(data.getPw()));
             }
         }
         if(data.getNickname() != null) {

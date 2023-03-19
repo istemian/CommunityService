@@ -5,15 +5,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class GetCommentVO {
-    private Long no;
-    private String nickname;
-    private String comment;
-    private LocalDateTime createDt;
+public class CommentMemberVO {
+    private String content;
 }

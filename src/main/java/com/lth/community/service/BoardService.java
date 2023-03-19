@@ -154,7 +154,7 @@ public class BoardService {
         BoardInfoEntity board = boardInfoRepository.findBySeq(no);
         MessageVO response = null;
         if(board == null) {
-            response = MessageVO.builder()
+            return MessageVO.builder()
                     .status(false)
                     .message("존재하지 않는 글입니다.")
                     .code(HttpStatus.BAD_REQUEST)
@@ -264,9 +264,13 @@ public class BoardService {
                 post.setTitle(post.getTitle());
                 post.setContent(data.getContent());
             }
-            if(data.getContent() == null || data.getContent().equals("")) {
+            else if(data.getContent() == null || data.getContent().equals("")) {
                 post.setTitle(data.getTitle());
                 post.setContent(post.getContent());
+            }
+            else {
+                post.setTitle(data.getTitle());
+                post.setContent(data.getContent());
             }
             post.setModifiedDt(LocalDateTime.now());
             boardInfoRepository.save(post);
@@ -277,16 +281,9 @@ public class BoardService {
                     .build();
         }
         else {
-            String message = null;
-            if(!check) {
-                message = "본인의 글이 아닙니다.";
-            }
-            else {
-                message = "수정에 실패했습니다.";
-            }
             return MessageVO.builder()
                     .status(false)
-                    .message(message)
+                    .message("본인의 글이 아닙니다.")
                     .code(HttpStatus.BAD_REQUEST)
                     .build();
         }
@@ -302,37 +299,34 @@ public class BoardService {
                     .code(HttpStatus.BAD_REQUEST)
                     .build();
         }
-        else if(data.getPw() == null || !data.getPw().equals(post.getPw())) {
+        else if(data.getPw() == null || !encoder.matches(data.getPw(), post.getPw())) {
             return MessageVO.builder()
                     .status(false)
                     .message("비밀번호를 확인해주세요.")
                     .code(HttpStatus.BAD_REQUEST)
                     .build();
         }
-        if(data.getPw().equals(post.getPw())) {
-            if(data.getTitle() == null || data.getTitle().equals("")) {
-                post.setTitle(post.getTitle());
-                post.setContent(data.getContent());
-            }
-            if(data.getContent() == null || data.getContent().equals("")) {
-                post.setTitle(data.getTitle());
-                post.setContent(post.getContent());
-            }
-            post.setModifiedDt(LocalDateTime.now());
-            boardInfoRepository.save(post);
-            return MessageVO.builder()
-                    .status(true)
-                    .message("수정되었습니다.")
-                    .code(HttpStatus.OK)
-                    .build();
+
+        if(data.getTitle() == null || data.getTitle().equals("")) {
+            post.setTitle(post.getTitle());
+            post.setContent(data.getContent());
+        }
+        else if(data.getContent() == null || data.getContent().equals("")) {
+            post.setTitle(data.getTitle());
+            post.setContent(post.getContent());
         }
         else {
-            return MessageVO.builder()
-                    .status(false)
-                    .message("수정 실패했습니다.")
-                    .code(HttpStatus.BAD_REQUEST)
-                    .build();
+            post.setTitle(data.getTitle());
+            post.setContent(data.getContent());
         }
+        post.setModifiedDt(LocalDateTime.now());
+        boardInfoRepository.save(post);
+        return MessageVO.builder()
+                .status(true)
+                .message("수정되었습니다.")
+                .code(HttpStatus.OK)
+                .build();
+
     }
     public ResponseEntity<Resource> getFile(String filename, HttpServletRequest request) throws Exception {
         Path folderLocation = Paths.get(path);
@@ -377,6 +371,7 @@ public class BoardService {
                     commentNickname = board.getComments().get(i).getNickname();
                 }
                 GetCommentVO commentMake = GetCommentVO.builder()
+                        .no(board.getComments().get(i).getSeq())
                         .nickname(commentNickname)
                         .comment(board.getComments().get(i).getContent())
                         .createDt(board.getComments().get(i).getCreatDt())
@@ -405,28 +400,6 @@ public class BoardService {
                 .modifiedDt(board.getModifiedDt())
                 .files(fileInfo)
                 .comments(commentInfo)
-                .build();
-    }
-
-    public MessageVO deleteImage(String uuid) throws IOException {
-        FileInfoEntity file = fileRepository.findByFilename(uuid);
-        if(file == null) {
-            return MessageVO.builder()
-                    .status(false)
-                    .message("존재하지 않는 파일입니다.")
-                    .code(HttpStatus.BAD_REQUEST)
-                    .build();
-        }
-        fileRepository.delete(file);
-
-        Path folderLocation = Paths.get(path);
-        Path targetFile = folderLocation.resolve(uuid);
-        Files.delete(targetFile);
-
-        return MessageVO.builder()
-                .status(true)
-                .message("파일이 삭제되었습니다.")
-                .code(HttpStatus.OK)
                 .build();
     }
 

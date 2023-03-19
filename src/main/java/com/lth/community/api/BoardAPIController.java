@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
@@ -24,12 +25,12 @@ import java.io.IOException;
 public class BoardAPIController {
     private final BoardService boardService;
 
-    @PostMapping("")
+    @PostMapping(value ="", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MessageVO> writingPost(Authentication authentication, @RequestPart(required = false) MultipartFile[] files, WritingMemberVO member) {
         MessageVO response = boardService.writing(authentication.getName(), member, files);
         return new ResponseEntity<>(response, response.getCode());
     }
-    @PostMapping("/non")
+    @PostMapping(value = "/non", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MessageVO> writingPostNonMember(@RequestPart(required = false) MultipartFile[] files, WritingNonMemberVO nonMemberVO) {
         MessageVO response = boardService.nonWriting(nonMemberVO, files);
         return new ResponseEntity<>(response, response.getCode());
@@ -74,9 +75,4 @@ public class BoardAPIController {
         return new ResponseEntity<>(boardService.getDetail(no), HttpStatus.OK);
     }
 
-    @DeleteMapping("/file/{file}")
-    public ResponseEntity<MessageVO> deleteFile(@PathVariable String file) throws IOException {
-        MessageVO response = boardService.deleteImage(file);
-        return new ResponseEntity<>(response, response.getCode());
-    }
 }
