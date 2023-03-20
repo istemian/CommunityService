@@ -17,5 +17,4 @@ public class MemberJoinVO {
     private String name;
     private String nickname;
     private String email;
-    private LocalDateTime createDt;
 }

@@ -83,7 +83,6 @@ public class BoardService {
                 .message("글이 등록되었습니다.")
                 .code(HttpStatus.OK)
                 .build();
-
     }
 
     public MessageVO nonWriting(WritingNonMemberVO nonMember, MultipartFile[] files) {
@@ -209,7 +208,10 @@ public class BoardService {
         if(keyword == null) { keyword = ""; }
         Page<BoardInfoEntity> board = boardInfoRepository.findByTitleContains(keyword, pageable);
         List<BoardInfoVO> info = new ArrayList<>();
-        for(int i=0; i<board.getTotalElements(); i++) {
+        if(pageable.getPageNumber() > board.getTotalPages()-1) {
+            return null;
+        }
+        for(int i=0; i<10; i++) {
             if (board.getContent().get(i).getBoardId() == null) {
                 BoardInfoVO infoMake = BoardInfoVO.builder()
                         .no(board.getContent().get(i).getSeq())
@@ -235,7 +237,7 @@ public class BoardService {
                 .list(info)
                 .total(board.getTotalElements())
                 .totalPage(board.getTotalPages())
-                .currentPage(board.getNumber())
+                .currentPage(board.getNumber()+1)
                 .build();
 
     }
