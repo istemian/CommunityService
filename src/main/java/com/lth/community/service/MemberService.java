@@ -1,12 +1,19 @@
 package com.lth.community.service;
 
+import com.lth.community.entity.BoardInfoEntity;
+import com.lth.community.entity.CommentInfoEntity;
 import com.lth.community.entity.DeleteMemberInfoEntity;
 import com.lth.community.entity.MemberInfoEntity;
+import com.lth.community.repository.BoardInfoRepository;
+import com.lth.community.repository.CommentInfoRepository;
 import com.lth.community.repository.DeleteMemberInfoRepository;
 import com.lth.community.repository.MemberInfoRepository;
 import com.lth.community.security.provider.JwtTokenProvider;
 import com.lth.community.security.service.CustomUserDetailService;
 import com.lth.community.vo.*;
+import com.lth.community.vo.board.BoardInfoVO;
+import com.lth.community.vo.board.GetBoardVO;
+import com.lth.community.vo.comment.GetMyCommentVO;
 import com.lth.community.vo.member.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +28,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.regex.Pattern;
 
@@ -34,6 +43,8 @@ public class MemberService {
     private final PasswordEncoder encoder;
     private final JavaMailSender javaMailSender;
     private final DeleteMemberInfoRepository deleteMemberInfoRepository;
+    private final BoardInfoRepository boardInfoRepository;
+    private final CommentInfoRepository commentInfoRepository;
 
     public MemberLoginResponseVO login(LoginVO login) {
         MemberInfoEntity member = memberInfoRepository.findByMemberId(login.getId());
@@ -299,5 +310,46 @@ public class MemberService {
                 .message("임시 비밀번호를 메일로 보냈습니다.")
                 .code(HttpStatus.OK)
                 .build();
+    }
+
+    public List<BoardInfoVO> getMyPost(String memberId) {
+        MemberInfoEntity member = memberInfoRepository.findByMemberId(memberId);
+        List<BoardInfoEntity> board = boardInfoRepository.findByMember(member);
+        if(board == null) {
+            return null;
+        }
+        List<BoardInfoVO> boardList = new ArrayList<>();
+        for(int i=0; i<board.size(); i++) {
+            BoardInfoVO myPost = BoardInfoVO.builder()
+                    .no(board.get(i).getSeq())
+                    .nickname(board.get(i).getMember().getNickname())
+                    .title(board.get(i).getTitle())
+                    .creatDt(board.get(i).getCreatDt())
+                    .modifiedDt(board.get(i).getModifiedDt())
+                    .build();
+            boardList.add(myPost);
+        }
+        return boardList;
+    }
+
+    public List<GetMyCommentVO> getMyComment(String memberId) {
+        MemberInfoEntity member = memberInfoRepository.findByMemberId(memberId);
+        List<CommentInfoEntity> comment = commentInfoRepository.findByMember(member);
+        if(comment == null) {
+            return null;
+        }
+        List<GetMyCommentVO> commentList = new ArrayList<>();
+        for(int i=0; i<comment.size(); i++) {
+            GetMyCommentVO myComment = GetMyCommentVO.builder()
+                    .postNo(comment.get(i).getBoard().getSeq())
+                    .postTitle(comment.get(i).getBoard().getTitle())
+                    .no(comment.get(i).getSeq())
+                    .nickname(comment.get(i).getMember().getNickname())
+                    .comment(comment.get(i).getContent())
+                    .createDt(comment.get(i).getCreatDt())
+                    .build();
+            commentList.add(myComment);
+        }
+        return commentList;
     }
 }

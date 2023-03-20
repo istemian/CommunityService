@@ -1,13 +1,7 @@
 package com.lth.community.service;
 
-import com.lth.community.entity.BoardInfoEntity;
-import com.lth.community.entity.DeleteMemberInfoEntity;
-import com.lth.community.entity.MemberInfoEntity;
-import com.lth.community.entity.BanMemberInfoEntity;
-import com.lth.community.repository.BoardInfoRepository;
-import com.lth.community.repository.DeleteMemberInfoRepository;
-import com.lth.community.repository.MemberInfoRepository;
-import com.lth.community.repository.BanMemberInfoRepository;
+import com.lth.community.entity.*;
+import com.lth.community.repository.*;
 import com.lth.community.vo.MessageVO;
 import com.lth.community.vo.admin.AllMemberInfoVO;
 import com.lth.community.vo.admin.MemberBanVO;
@@ -26,6 +20,7 @@ public class AdminService {
     private final BanMemberInfoRepository banMemberInfoRepository;
     private final DeleteMemberInfoRepository deleteMemberInfoRepository;
     private final BoardInfoRepository boardInfoRepository;
+    private final CommentInfoRepository commentInfoRepository;
 
     public List<AllMemberInfoVO> allMemberList() {
         List<MemberInfoEntity> create = memberInfoRepository.findAll();
@@ -128,7 +123,7 @@ public class AdminService {
                 .build();
     }
 
-    public MessageVO deletePost(Long no) throws Exception {
+    public MessageVO deletePost(Long no) {
         BoardInfoEntity delete = boardInfoRepository.findBySeq(no);
         if(delete == null) {
             return MessageVO.builder()
@@ -141,6 +136,23 @@ public class AdminService {
         return MessageVO.builder()
                 .status(true)
                 .message(delete.getSeq()+"번 글이 삭제되었습니다.")
+                .code(HttpStatus.OK)
+                .build();
+    }
+
+    public MessageVO deleteComment(Long no) {
+        CommentInfoEntity delete = commentInfoRepository.findBySeq(no);
+        if(delete == null) {
+            return MessageVO.builder()
+                    .status(false)
+                    .message("댓글이 존재하지 않습니다.")
+                    .code(HttpStatus.BAD_REQUEST)
+                    .build();
+        }
+        commentInfoRepository.delete(delete);
+        return MessageVO.builder()
+                .status(true)
+                .message(delete.getSeq()+"번 댓글이 삭제되었습니다.")
                 .code(HttpStatus.OK)
                 .build();
     }

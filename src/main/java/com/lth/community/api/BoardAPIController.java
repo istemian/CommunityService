@@ -36,15 +36,15 @@ public class BoardAPIController {
         return new ResponseEntity<>(response, response.getCode());
     }
 
-    @DeleteMapping("/{no}")
-    public ResponseEntity<MessageVO> deletePost(Authentication authentication, @PathVariable Long no) {
-        MessageVO response = boardService.delete(authentication.getName(), no);
+    @DeleteMapping("/{postNo}")
+    public ResponseEntity<MessageVO> deletePost(Authentication authentication, @PathVariable Long postNo) {
+        MessageVO response = boardService.delete(authentication.getName(), postNo);
         return new ResponseEntity<>(response, response.getCode());
     }
 
-    @DeleteMapping("/non/{no}")
-    public ResponseEntity<MessageVO> nonDeletePost(@PathVariable Long no, @RequestBody DeletePostNonMemberVO data) {
-        MessageVO response = boardService.nonDelete(no, data);
+    @DeleteMapping("/non/{postNo}")
+    public ResponseEntity<MessageVO> nonDeletePost(@PathVariable Long postNo, @RequestBody DeletePostNonMemberVO data) {
+        MessageVO response = boardService.nonDelete(postNo, data);
         return new ResponseEntity<>(response, response.getCode());
     }
 
@@ -53,15 +53,15 @@ public class BoardAPIController {
         return new ResponseEntity<>(boardService.getBoard(keyword, pageable), HttpStatus.OK);
     }
 
-    @PatchMapping("/{no}")
-    public ResponseEntity<MessageVO> updatePost(@RequestBody WritingMemberVO data, Authentication authentication, @PathVariable Long no) {
-        MessageVO response = boardService.update(data, authentication.getName(), no);
+    @PatchMapping("/{postNo}")
+    public ResponseEntity<MessageVO> updatePost(@RequestBody WritingMemberVO data, Authentication authentication, @PathVariable Long postNo) {
+        MessageVO response = boardService.update(data, authentication.getName(), postNo);
         return new ResponseEntity<>(response, response.getCode());
     }
 
-    @PatchMapping("/non/{no}")
-    public ResponseEntity<MessageVO> updatePost(@RequestBody UpdatePostNonMember data, @PathVariable Long no) {
-        MessageVO response = boardService.nonUpdate(data, no);
+    @PatchMapping("/non/{postNo}")
+    public ResponseEntity<MessageVO> updatePost(@RequestBody UpdatePostNonMember data, @PathVariable Long postNo) {
+        MessageVO response = boardService.nonUpdate(data, postNo);
         return new ResponseEntity<>(response, response.getCode());
     }
 
@@ -70,9 +70,9 @@ public class BoardAPIController {
         return boardService.getFile(file, request);
     }
 
-    @GetMapping("/{no}/detail")
-    public ResponseEntity<BoardDetailVO> getBoard(@PathVariable Long no) {
-        return new ResponseEntity<>(boardService.getDetail(no), HttpStatus.OK);
+    @GetMapping("/{postNo}/detail")
+    public ResponseEntity<BoardDetailVO> getBoard(@PathVariable Long postNo) {
+        return new ResponseEntity<>(boardService.getDetail(postNo), HttpStatus.OK);
     }
 
 }

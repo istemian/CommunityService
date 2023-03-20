@@ -2,12 +2,17 @@ package com.lth.community.api;
 
 import com.lth.community.service.MemberService;
 import com.lth.community.vo.*;
+import com.lth.community.vo.board.BoardInfoVO;
+import com.lth.community.vo.board.GetBoardVO;
+import com.lth.community.vo.comment.GetMyCommentVO;
 import com.lth.community.vo.member.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/members")
@@ -51,5 +56,15 @@ public class MemberAPIController {
     public ResponseEntity<MessageVO> findMemberPw(@RequestBody MemberFindPwVO data) {
         MessageVO response = memberService.findMemberPw(data);
         return new ResponseEntity<>(response, response.getCode());
+    }
+
+    @GetMapping("/myPost")
+    public ResponseEntity<List<BoardInfoVO>> getMyPost(Authentication authentication) {
+        return new ResponseEntity<>(memberService.getMyPost(authentication.getName()), HttpStatus.OK);
+    }
+
+    @GetMapping("/myComment")
+    public ResponseEntity<List<GetMyCommentVO>> getMyComment(Authentication authentication) {
+        return new ResponseEntity<>(memberService.getMyComment(authentication.getName()), HttpStatus.OK);
     }
 }

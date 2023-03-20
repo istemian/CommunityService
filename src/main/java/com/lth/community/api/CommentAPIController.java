@@ -30,15 +30,15 @@ public class CommentAPIController {
         return new ResponseEntity<>(response, response.getCode());
     }
 
-    @DeleteMapping("/{no}")
-    public ResponseEntity<MessageVO> deletePost(Authentication authentication, @PathVariable Long no) {
-        MessageVO response = commentService.delete(authentication.getName(), no);
+    @DeleteMapping("/{commentNo}")
+    public ResponseEntity<MessageVO> deletePost(Authentication authentication, @PathVariable Long commentNo) {
+        MessageVO response = commentService.delete(authentication.getName(), commentNo);
         return new ResponseEntity<>(response, response.getCode());
     }
 
-    @DeleteMapping("/non/{no}")
-    public ResponseEntity<MessageVO> nonDeletePost(@PathVariable Long no, @RequestBody DeletePostNonMemberVO data) {
-        MessageVO response = commentService.nonDelete(no, data);
+    @DeleteMapping("/non/{commentNo}")
+    public ResponseEntity<MessageVO> nonDeletePost(@PathVariable Long commentNo, @RequestBody DeletePostNonMemberVO data) {
+        MessageVO response = commentService.nonDelete(commentNo, data);
         return new ResponseEntity<>(response, response.getCode());
     }
 }

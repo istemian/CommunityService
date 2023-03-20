@@ -17,20 +17,26 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminAPIController {
     private final AdminService adminService;
-    @GetMapping("/userList")
+    @GetMapping("/memberList")
     public ResponseEntity<List<AllMemberInfoVO>> getMemberList() {
         return new ResponseEntity<>(adminService.allMemberList(), HttpStatus.OK);
     }
 
-    @PostMapping("/userBan")
+    @PostMapping("/memberBan")
     public  ResponseEntity<MessageVO> banMember(@RequestBody MemberBanVO data) {
         MessageVO response = adminService.banMember(data);
         return new ResponseEntity<>(response, response.getCode());
     }
 
-    @DeleteMapping("/post/{no}")
-    public  ResponseEntity<MessageVO> banMember(@PathVariable Long no) throws Exception {
-        MessageVO response = adminService.deletePost(no);
+    @DeleteMapping("/post/{postNo}")
+    public  ResponseEntity<MessageVO> deletePost(@PathVariable Long postNo) {
+        MessageVO response = adminService.deletePost(postNo);
+        return new ResponseEntity<>(response, response.getCode());
+    }
+
+    @DeleteMapping("/comment/{commentNo}")
+    public  ResponseEntity<MessageVO> deleteComment(@PathVariable Long commentNo) {
+        MessageVO response = adminService.deleteComment(commentNo);
         return new ResponseEntity<>(response, response.getCode());
     }
 }
