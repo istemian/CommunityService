@@ -6,5 +6,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class GetFileVO {
+    private String uuid;
     private String file;
 }

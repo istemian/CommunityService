@@ -12,6 +12,7 @@ import com.lth.community.vo.comment.GetCommentVO;
 import com.lth.community.vo.file.GetFileVO;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.apache.tomcat.util.buf.UriUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -24,9 +25,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriUtils;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -64,20 +67,14 @@ public class BoardService {
         if(files != null) {
             for (int a = 0; a < files.length; a++) {
                 String originFileName = files[a].getOriginalFilename();
-                String[] split = originFileName.split("\\.");
-                String ext = split[split.length - 1];
-                String filename = "";
-                for (int i = 0; i < split.length - 1; i++) {
-                    filename += split[i];
-                }
-                String saveFilename = String.valueOf(UUID.randomUUID())+"."+ext;
+                String saveFilename = String.valueOf(UUID.randomUUID());
                 Path targetFile = folderLocation.resolve(saveFilename);
                 try {
                     Files.copy(files[a].getInputStream(), targetFile, StandardCopyOption.REPLACE_EXISTING);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                FileInfoEntity file = new FileInfoEntity(null, saveFilename, filename, memberPost);
+                FileInfoEntity file = new FileInfoEntity(null, saveFilename, originFileName, memberPost);
                 fileRepository.save(file);
             }
         }
@@ -126,20 +123,14 @@ public class BoardService {
         if(files != null) {
             for (int a = 0; a < files.length; a++) {
                 String originFileName = files[a].getOriginalFilename();
-                String[] split = originFileName.split("\\.");
-                String ext = split[split.length - 1];
-                String filename = "";
-                for (int i = 0; i < split.length - 1; i++) {
-                    filename += split[i];
-                }
-                String saveFilename = String.valueOf(UUID.randomUUID())+"."+ext;
+                String saveFilename = String.valueOf(UUID.randomUUID());
                 Path targetFile = folderLocation.resolve(saveFilename);
                 try {
                     Files.copy(files[a].getInputStream(), targetFile, StandardCopyOption.REPLACE_EXISTING);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                FileInfoEntity file = new FileInfoEntity(null, saveFilename, filename, nonMemberPost);
+                FileInfoEntity file = new FileInfoEntity(null, saveFilename, originFileName, nonMemberPost);
                 fileRepository.save(file);
             }
         }
@@ -330,27 +321,12 @@ public class BoardService {
     }
     public ResponseEntity<Resource> getFile(String filename, HttpServletRequest request) throws Exception {
         Path folderLocation = Paths.get(path);
+        FileInfoEntity file = fileRepository.findByFilename(filename);
         Path targetFile = folderLocation.resolve(filename);
-        Resource r = null;
-        try {
-            r = new UrlResource(targetFile.toUri());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        String contentType = null;
-        try {
-            contentType = request.getServletContext().getMimeType(r.getFile().getAbsolutePath());
-            if (contentType == null) {
-                contentType = "application/octet-stream";
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename*=\"" + URLEncoder.encode(filename, "UTF-8") + "\"")
-                .body(r);
+        UrlResource resource = new UrlResource(targetFile.toUri());
+        String encodedFileName = UriUtils.encode(file.getOriginalName(), StandardCharsets.UTF_8);
+        String contentDisposition = "attachment; filename=\"" + encodedFileName + "\"";
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,contentDisposition).body(resource);
     }
 
     public BoardDetailVO getDetail(Long no) {
@@ -381,7 +357,7 @@ public class BoardService {
         }
         if(board.getFiles() != null) {
             for(int i=0; i<board.getFiles().size(); i++) {
-                GetFileVO fileMake = new GetFileVO(board.getFiles().get(i).getFilename());
+                GetFileVO fileMake = new GetFileVO(board.getFiles().get(i).getFilename() ,board.getFiles().get(i).getOriginalName());
                 fileInfo.add(fileMake);
             }
         }
