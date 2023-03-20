@@ -319,7 +319,7 @@ public class BoardService {
                 .build();
 
     }
-    public ResponseEntity<Resource> getFile(String filename, HttpServletRequest request) throws Exception {
+    public ResponseEntity<Resource> getFile(String filename) throws Exception {
         Path folderLocation = Paths.get(path);
         FileInfoEntity file = fileRepository.findByFilename(filename);
         Path targetFile = folderLocation.resolve(filename);

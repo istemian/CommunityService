@@ -28,7 +28,7 @@ public class AdminAPIController {
         return new ResponseEntity<>(response, response.getCode());
     }
 
-    @DeleteMapping("/post/{postNo}")
+    @DeleteMapping("/board/{postNo}")
     public  ResponseEntity<MessageVO> deletePost(@PathVariable Long postNo) {
         MessageVO response = adminService.deletePost(postNo);
         return new ResponseEntity<>(response, response.getCode());

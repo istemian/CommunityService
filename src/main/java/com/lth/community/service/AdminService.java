@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -107,8 +108,8 @@ public class AdminService {
                     .build();
         }
         BanMemberInfoEntity banReason = BanMemberInfoEntity.builder()
-                        .startDt(LocalDate.now())
-                        .endDt(LocalDate.now().plusDays(data.getEndDt()))
+                        .startDt(LocalDateTime.now())
+                        .endDt(LocalDateTime.now().plusDays(data.getEndDt()))
                         .reason(data.getReason())
                         .member(banMember)
                         .build();

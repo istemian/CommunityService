@@ -18,6 +18,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @EnableScheduling
@@ -29,7 +32,7 @@ public class DeleteAndRelease {
     private final DeleteMemberInfoRepository deleteMemberInfoRepository;
     private final FileRepository fileRepository;
     @Value("${file.files}") String path;
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 10 * * * *")
     public void delete() {
         List<DeleteMemberInfoEntity> delete = deleteMemberInfoRepository.findAll();
         if(delete.size() == 0) {
@@ -37,13 +40,15 @@ public class DeleteAndRelease {
             return;
         }
         for(int i=0; i<delete.size(); i++) {
-            if(delete.get(i).getDeleteDt().equals(LocalDate.now())) {
+            String deleteMember = delete.get(i).getDeleteDt().format(DateTimeFormatter.ofPattern("yyMMddHHmm")).substring(0, 9);
+            String deleteDay = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMddHHmm")).substring(0, 9);
+            if(deleteMember.equals(deleteDay)) {
                 deleteMemberInfoRepository.delete(delete.get(i));
             }
         }
         System.out.println("삭제 완료");
     }
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 10 * * * *")
     public void release() {
         List<BanMemberInfoEntity> banMember = banMemberInfoRepository.findAll();
         if(banMember.size() == 0) {
@@ -51,14 +56,16 @@ public class DeleteAndRelease {
             return;
         }
         for(int i=0; i<banMember.size(); i++) {
-            if(banMember.get(i).getEndDt().equals(LocalDate.now())) {
+            String releaseMember = banMember.get(i).getEndDt().format(DateTimeFormatter.ofPattern("yyMMddHHmm")).substring(0, 9);
+            String releaseDay = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMddHHmm")).substring(0, 9);
+            if(releaseMember.equals(releaseDay)) {
                 banMember.get(i).getMember().setStatus(1);
             }
         }
         System.out.println("정지 해제 완료");
     }
 
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 10 * * * *")
     public void deleteImage() throws IOException {
         List<FileInfoEntity> file = fileRepository.findAll();
         for(int i=0; i<file.size(); i++) {

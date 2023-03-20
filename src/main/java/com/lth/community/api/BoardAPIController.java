@@ -66,8 +66,8 @@ public class BoardAPIController {
     }
 
     @GetMapping("/file/{file}")
-    public ResponseEntity<Resource> getFile(@PathVariable String file ,HttpServletRequest request) throws Exception {
-        return boardService.getFile(file, request);
+    public ResponseEntity<Resource> getFile(@PathVariable String file) throws Exception {
+        return boardService.getFile(file);
     }
 
     @GetMapping("/{postNo}/detail")

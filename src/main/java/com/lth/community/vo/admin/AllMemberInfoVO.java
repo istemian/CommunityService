@@ -21,7 +21,7 @@ public class AllMemberInfoVO {
     private Integer status;
     private String role;
     private LocalDateTime createDt;
-    private LocalDate banEndDt;
+    private LocalDateTime banEndDt;
     private String banReason;
-    private LocalDate deleteDt;
+    private LocalDateTime deleteDt;
 }
