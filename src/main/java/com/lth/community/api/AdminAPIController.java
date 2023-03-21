@@ -45,23 +45,23 @@ public class AdminAPIController {
         return new ResponseEntity<>(response, response.getCode());
     }
 
-    @PostMapping("/dummyMember")
-    public ResponseEntity<MessageVO> dummyMember() {
-        MessageVO response = adminService.dummyMember();
-        return new ResponseEntity<>(response, response.getCode());
-    }
-
-    @PostMapping("/dummyPost")
-    public ResponseEntity<MessageVO> dummyPost() {
-        MessageVO response = adminService.dummyPost();
-        return new ResponseEntity<>(response, response.getCode());
-    }
-
-    @PostMapping("/dummyComment")
-    public ResponseEntity<MessageVO> dummyComment() {
-        MessageVO response = adminService.dummyComment();
-        return new ResponseEntity<>(response, response.getCode());
-    }
+//    @PostMapping("/dummyMember")
+//    public ResponseEntity<MessageVO> dummyMember() {
+//        MessageVO response = adminService.dummyMember();
+//        return new ResponseEntity<>(response, response.getCode());
+//    }
+//
+//    @PostMapping("/dummyPost")
+//    public ResponseEntity<MessageVO> dummyPost() {
+//        MessageVO response = adminService.dummyPost();
+//        return new ResponseEntity<>(response, response.getCode());
+//    }
+//
+//    @PostMapping("/dummyComment")
+//    public ResponseEntity<MessageVO> dummyComment() {
+//        MessageVO response = adminService.dummyComment();
+//        return new ResponseEntity<>(response, response.getCode());
+//    }
 
     @Operation(summary = "권한 변경", description = "원하는 회원의 권한을 변경합니다. 권한이 ADMIN일 시 USER로 USER일 시 ADMIN으로 변경됩니다.")
     @PostMapping("/authorize/{memberId}")
