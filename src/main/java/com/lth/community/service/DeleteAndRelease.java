@@ -32,7 +32,9 @@ public class DeleteAndRelease {
     private final DeleteMemberInfoRepository deleteMemberInfoRepository;
     private final FileRepository fileRepository;
     @Value("${file.files}") String path;
-    @Scheduled(cron = "0 10 * * * *")
+
+    // 탈퇴 회원 삭제 처리
+    @Scheduled(cron = "0 */10 * * * *")
     public void delete() {
         List<DeleteMemberInfoEntity> delete = deleteMemberInfoRepository.findAll();
         if(delete.size() == 0) {
@@ -48,7 +50,9 @@ public class DeleteAndRelease {
         }
         System.out.println("삭제 완료");
     }
-    @Scheduled(cron = "0 10 * * * *")
+    
+    // 정지 해제 처리
+    @Scheduled(cron = "0 */10 * * * *")
     public void release() {
         List<BanMemberInfoEntity> banMember = banMemberInfoRepository.findAll();
         if(banMember.size() == 0) {
@@ -65,7 +69,8 @@ public class DeleteAndRelease {
         System.out.println("정지 해제 완료");
     }
 
-    @Scheduled(cron = "0 10 * * * *")
+    // 삭제된 게시글의 첨부파일 DB 및 서버에서 삭제 처리
+    @Scheduled(cron = "0 */10 * * * *")
     public void deleteImage() throws IOException {
         List<FileInfoEntity> file = fileRepository.findAll();
         for(int i=0; i<file.size(); i++) {

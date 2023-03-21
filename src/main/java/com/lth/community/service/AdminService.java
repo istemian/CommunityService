@@ -251,4 +251,28 @@ public class AdminService {
                 .code(HttpStatus.OK)
                 .build();
     }
+
+    public MessageVO authorize(String memberId) {
+        MemberInfoEntity member = memberInfoRepository.findByMemberId(memberId);
+        String beforeAuthorize = member.getRole();
+        if(member == null) {
+            return MessageVO.builder()
+                    .status(false)
+                    .message("존재하지 않는 회원입니다.")
+                    .code(HttpStatus.BAD_REQUEST)
+                    .build();
+        }
+        if(member.getRole().equals("USER")) {
+            member.setRole("ADMIN");
+        }
+        else if(member.getRole().equals("ADMIN")) {
+            member.setRole("USER");
+        }
+        memberInfoRepository.save(member);
+        return MessageVO.builder()
+                .status(true)
+                .message(member.getMemberId()+" 권한 설정 완료 ( "+beforeAuthorize+" -> "+ member.getRole()+" )")
+                .code(HttpStatus.OK)
+                .build();
+    }
 }
