@@ -58,7 +58,7 @@ public class BoardAPIController {
 
     @Operation(summary = "게시판 전체 조회", description = "게시판 전체 조회가 가능합니다. 기본값은 게시글 10개씩 1페이지부터 최신순으로 조회됩니다.")
     @GetMapping("")
-    public ResponseEntity<GetBoardVO> getBoard(@Parameter(description = "검색어") @RequestParam @Nullable String keyword, @PageableDefault(size = 10, sort = "seq", direction = Sort.Direction.DESC) Pageable pageable) {
+    public ResponseEntity<GetBoardVO> getBoard(@Parameter(description = "검색어") @RequestParam @Nullable String keyword, @RequestParam @Nullable Integer page, @Parameter(hidden = true) @PageableDefault(size = 10, sort = "seq", direction = Sort.Direction.DESC) Pageable pageable) {
         return new ResponseEntity<>(boardService.getBoard(keyword, pageable), HttpStatus.OK);
     }
 
