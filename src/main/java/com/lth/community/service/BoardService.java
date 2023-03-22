@@ -10,25 +10,19 @@ import com.lth.community.vo.MessageVO;
 import com.lth.community.vo.board.*;
 import com.lth.community.vo.comment.GetCommentVO;
 import com.lth.community.vo.file.GetFileVO;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.apache.tomcat.util.buf.UriUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriUtils;
 
-import java.io.IOException;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -204,42 +198,44 @@ public class BoardService {
         return response;
     }
 
-    public GetBoardVO getBoard(String keyword, Pageable pageable) {
-        if(keyword == null) { keyword = ""; }
-        Page<BoardInfoEntity> board = boardInfoRepository.findByTitleContains(keyword, pageable);
-        List<BoardInfoVO> info = new ArrayList<>();
-        if(pageable.getPageNumber() > board.getTotalPages()-1) {
-            return null;
+    public GetBoardVO getBoard(String title, Integer page, Integer size) {
+        Integer currentPage = null;
+        if(title == null) { title = ""; }
+        if(size == null) { size = 10; }
+        if(page == null || page == 1) { currentPage = 0; }
+        else if(page >= 2) {
+            currentPage = (page*size)-size;
         }
-        for(int i=0; i<10; i++) {
-            if (board.getContent().get(i).getBoardId() == null) {
-                BoardInfoVO infoMake = BoardInfoVO.builder()
-                        .no(board.getContent().get(i).getSeq())
-                        .nickname(board.getContent().get(i).getMember().getMemberId())
-                        .title(board.getContent().get(i).getTitle())
-                        .creatDt(board.getContent().get(i).getCreatDt())
-                        .modifiedDt(board.getContent().get(i).getModifiedDt())
-                        .build();
-                info.add(infoMake);
+
+        List<BoardInfoEntity> boardList = boardInfoRepository.findByTitle(title, currentPage, size);
+        List<BoardInfoEntity> searchTotal = boardInfoRepository.findByTitleAll(title);
+        Integer total = searchTotal.size();
+        Integer totalPage = (searchTotal.size()/size)+1;
+        List<BoardInfoVO> board = new ArrayList<>();
+        String nickname = null;
+        for(int i=0; i<boardList.size(); i++) {
+            if(boardList.get(i).getMember() != null) {
+                nickname = boardList.get(i).getMember().getNickname();
+
             }
-            else if(board.getContent().get(i).getMember() == null) {
-                BoardInfoVO infoMake = BoardInfoVO.builder()
-                        .no(board.getContent().get(i).getSeq())
-                        .nickname(board.getContent().get(i).getBoardId())
-                        .title(board.getContent().get(i).getTitle())
-                        .creatDt(board.getContent().get(i).getCreatDt())
-                        .modifiedDt(board.getContent().get(i).getModifiedDt())
-                        .build();
-                info.add(infoMake);
+            else if(boardList.get(i).getBoardId() != null) {
+                nickname = boardList.get(i).getBoardId();
             }
+            BoardInfoVO createBoard =BoardInfoVO.builder()
+                    .no(boardList.get(i).getSeq())
+                    .nickname(nickname)
+                    .title(boardList.get(i).getTitle())
+                    .creatDt(boardList.get(i).getCreatDt())
+                    .modifiedDt(boardList.get(i).getModifiedDt())
+                    .build();
+            board.add(createBoard);
         }
         return GetBoardVO.builder()
-                .list(info)
-                .total(board.getTotalElements())
-                .totalPage(board.getTotalPages())
-                .currentPage(board.getNumber()+1)
+                .list(board)
+                .total(total)
+                .totalPage(totalPage)
+                .currentPage(page)
                 .build();
-
     }
 
     public MessageVO update(WritingMemberVO data, String memberId, Long no) {
