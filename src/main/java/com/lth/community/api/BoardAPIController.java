@@ -77,7 +77,7 @@ public class BoardAPIController {
     }
 
     @Operation(summary = "파일 다운로드" , description = "파일을 다운로드 할 수 있습니다. 파일의 uuid를 입력하면 원본 파일명으로 다운로드됩니다.")
-    @GetMapping("/file/{file}")
+    @GetMapping(value = "/file/{file}", produces = "application/octet-stream")
     public ResponseEntity<Resource> getFile(@Parameter(description = "파일의 uuid") @PathVariable String file) throws Exception {
         return boardService.getFile(file);
     }

@@ -7,11 +7,11 @@ spring:
   servlet:
     multipart:
       enabled: true
-      max-file-size: 100MB
-      max-request-size: 110MB
+      max-file-size: 5MB
+      max-request-size: 10MB
 
 file:
-  files: /community/files
+  files: /home/ec2-user/community/files
 
 # Swagger Settings
 springdoc:
