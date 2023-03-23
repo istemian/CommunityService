@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 @Component
 public class JwtTokenProvider {
     private final Key key;
-    private final Integer tokenExpireMinutes = 10;
-    private final Integer refreshExpireMinutes = 30;
+    private final Integer tokenExpireMinutes = 60;
+    private final Integer refreshExpireMinutes = 60 * 24 * 7;
     public JwtTokenProvider(@Value("${jwt.secretKey}") String secretKey) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);

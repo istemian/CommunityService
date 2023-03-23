@@ -62,17 +62,17 @@ public class BoardAPIController {
         return new ResponseEntity<>(boardService.getBoard(title, page, size), HttpStatus.OK);
     }
 
-    @Operation(summary = "회원 게시글 수정", description = "게시글을 수정합니다. 파일 여러개 등록이 가능하며 기존 등록된 파일은 삭제됩니다.")
-    @PatchMapping(value = "/{postNo}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<MessageVO> updatePost(@PathVariable Long postNo, @RequestPart(required = false) MultipartFile[] files, WritingMemberVO data, Authentication authentication) {
-        MessageVO response = boardService.update(data, authentication.getName(), postNo, files);
+    @Operation(summary = "회원 게시글 수정", description = "게시글을 수정합니다. 파일 여러개 등록이 가능하며 기존 등록된 파일은 삭제됩니다. 제목과 내용은 미입력 가능(파일만 변경)하며, 미입력 시 기존 제목과 내용 적용됩니다.")
+    @PatchMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<MessageVO> updatePost(Authentication authentication, @RequestPart(required = false) MultipartFile[] files, WritingMemberVO data) {
+        MessageVO response = boardService.update(data, authentication.getName(), files);
         return new ResponseEntity<>(response, response.getCode());
     }
 
-    @Operation(summary = "비회원 게시글 수정", description = "비밀번호가 일치하면 게시글을 수정할 수 있습니다. 파일 여러개 등록이 가능하며 기존 등록된 파일은 삭제됩니다.")
-    @PatchMapping(value = "/non/{postNo}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<MessageVO> updatePost(@PathVariable Long postNo, @RequestPart(required = false) MultipartFile[] files, UpdatePostNonMember data) {
-        MessageVO response = boardService.nonUpdate(data, postNo, files);
+    @Operation(summary = "비회원 게시글 수정", description = "비밀번호가 일치하면 게시글을 수정할 수 있습니다. 파일 여러개 등록이 가능하며 기존 등록된 파일은 삭제됩니다. 비밀번호 외 제목과 내용은 미입력 가능(파일만 변경)하며, 미입력 시 기존 제목과 내용 적용됩니다.")
+    @PatchMapping(value = "/non", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<MessageVO> updatePost(@RequestPart(required = false) MultipartFile[] files, UpdatePostNonMember data) {
+        MessageVO response = boardService.nonUpdate(data, files);
         return new ResponseEntity<>(response, response.getCode());
     }
 

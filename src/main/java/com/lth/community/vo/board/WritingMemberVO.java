@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class WritingMemberVO {
+    private Long postNo;
     private String title;
     private String content;
 }

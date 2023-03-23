@@ -238,9 +238,10 @@ public class BoardService {
                 .build();
     }
 
-    public MessageVO update(WritingMemberVO data, String memberId, Long no, MultipartFile[] files) {
+    public MessageVO update(WritingMemberVO data, String memberId, MultipartFile[] files) {
         Path folderLocation = Paths.get(path);
-        BoardInfoEntity post = boardInfoRepository.findBySeq(no);
+        System.out.println("data = " + data.getTitle());
+        BoardInfoEntity post = boardInfoRepository.findBySeq(data.getPostNo());
         if(post == null) {
             return MessageVO.builder()
                     .status(false)
@@ -305,9 +306,9 @@ public class BoardService {
         }
     }
 
-    public MessageVO nonUpdate(UpdatePostNonMember data, Long no, MultipartFile[] files) {
+    public MessageVO nonUpdate(UpdatePostNonMember data, MultipartFile[] files) {
         Path folderLocation = Paths.get(path);
-        BoardInfoEntity post = boardInfoRepository.findBySeq(no);
+        BoardInfoEntity post = boardInfoRepository.findBySeq(data.getPostNo());
         if(post == null) {
             return MessageVO.builder()
                     .status(false)

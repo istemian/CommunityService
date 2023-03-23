@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class UpdatePostNonMember {
+    private Long postNo;
     private String pw;
     private String title;
     private String content;
