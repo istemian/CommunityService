@@ -29,13 +29,13 @@ import java.io.IOException;
 public class BoardAPIController {
     private final BoardService boardService;
 
-    @Operation(summary = "회원 게시글 등록")
+    @Operation(summary = "회원 게시글 등록", description = "파일 등록도 가능합니다. 여러개 파일을 업로드 할 수 있으며 파일 하나당 5MB, 총 10MB까지 가능합니다.")
     @PostMapping(value ="", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MessageVO> writingPost(Authentication authentication, @RequestPart(required = false) MultipartFile[] files, WritingMemberVO member) {
         MessageVO response = boardService.writing(authentication.getName(), member, files);
         return new ResponseEntity<>(response, response.getCode());
     }
-    @Operation(summary = "비회원 게시글 등록", description = "아이디와 비밀번호를 입력하여 비회원이라도 게시글 등록이 가능합니다.")
+    @Operation(summary = "비회원 게시글 등록", description = "아이디와 비밀번호를 입력하여 비회원이라도 게시글 등록이 가능합니다. 파일 등록도 가능합니다. 여러개 파일을 업로드 할 수 있으며 파일 하나당 5MB, 총 10MB까지 가능합니다.")
     @PostMapping(value = "/non", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MessageVO> writingPostNonMember(@RequestPart(required = false) MultipartFile[] files, WritingNonMemberVO nonMemberVO) {
         MessageVO response = boardService.nonWriting(nonMemberVO, files);
@@ -58,21 +58,21 @@ public class BoardAPIController {
 
     @Operation(summary = "게시판 전체 조회", description = "게시판을 조회합니다. 검색어 입력 시 검색어가 제목에 들어간 게시글만 조회됩니다.")
     @GetMapping("")
-    public ResponseEntity<GetBoardVO> getBoard(@Parameter(description = "검색어") @RequestParam @Nullable String title,@Parameter(description = "미 입력 시 1페이지 조회") @RequestParam @Nullable Integer page,@Parameter(description = "미 입력 시 10개씩 조회") @RequestParam @Nullable Integer size) {
+    public ResponseEntity<GetBoardVO> getBoard(@Parameter(description = "검색어") @RequestParam @Nullable String title, @Parameter(description = "미 입력 시 1페이지 조회") @RequestParam @Nullable Integer page, @Parameter(description = "미 입력 시 10개씩 조회") @RequestParam @Nullable Integer size) {
         return new ResponseEntity<>(boardService.getBoard(title, page, size), HttpStatus.OK);
     }
 
-    @Operation(summary = "회원 게시글 수정")
-    @PatchMapping("/{postNo}")
-    public ResponseEntity<MessageVO> updatePost(@RequestBody WritingMemberVO data, Authentication authentication, @PathVariable Long postNo) {
-        MessageVO response = boardService.update(data, authentication.getName(), postNo);
+    @Operation(summary = "회원 게시글 수정", description = "게시글을 수정합니다. 파일 여러개 등록이 가능하며 기존 등록된 파일은 삭제됩니다.")
+    @PatchMapping(value = "/{postNo}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<MessageVO> updatePost(@PathVariable Long postNo, @RequestPart(required = false) MultipartFile[] files, WritingMemberVO data, Authentication authentication) {
+        MessageVO response = boardService.update(data, authentication.getName(), postNo, files);
         return new ResponseEntity<>(response, response.getCode());
     }
 
-    @Operation(summary = "비회원 게시글 수정", description = "비밀번호가 일치하면 게시글을 수정할 수 있습니다.")
-    @PatchMapping("/non/{postNo}")
-    public ResponseEntity<MessageVO> updatePost(@RequestBody UpdatePostNonMember data, @PathVariable Long postNo) {
-        MessageVO response = boardService.nonUpdate(data, postNo);
+    @Operation(summary = "비회원 게시글 수정", description = "비밀번호가 일치하면 게시글을 수정할 수 있습니다. 파일 여러개 등록이 가능하며 기존 등록된 파일은 삭제됩니다.")
+    @PatchMapping(value = "/non/{postNo}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<MessageVO> updatePost(@PathVariable Long postNo, @RequestPart(required = false) MultipartFile[] files, UpdatePostNonMember data) {
+        MessageVO response = boardService.nonUpdate(data, postNo, files);
         return new ResponseEntity<>(response, response.getCode());
     }
 
@@ -87,5 +87,4 @@ public class BoardAPIController {
     public ResponseEntity<BoardDetailVO> getBoard(@PathVariable Long postNo) {
         return new ResponseEntity<>(boardService.getDetail(postNo), HttpStatus.OK);
     }
-
 }

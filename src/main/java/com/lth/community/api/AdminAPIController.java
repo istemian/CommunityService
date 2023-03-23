@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admins")
 @RequiredArgsConstructor
-@Tag(name = "관리자 API", description = "관리자용 API 입니다.")
+@Tag(name = "관리자 API", description = "관리자용 API 입니다. 테스트용 id : admin001 / pw : admin001")
 public class AdminAPIController {
     private final AdminService adminService;
     @Operation(summary = "모든 회원 조회")

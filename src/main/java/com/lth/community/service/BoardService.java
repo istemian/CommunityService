@@ -238,7 +238,8 @@ public class BoardService {
                 .build();
     }
 
-    public MessageVO update(WritingMemberVO data, String memberId, Long no) {
+    public MessageVO update(WritingMemberVO data, String memberId, Long no, MultipartFile[] files) {
+        Path folderLocation = Paths.get(path);
         BoardInfoEntity post = boardInfoRepository.findBySeq(no);
         if(post == null) {
             return MessageVO.builder()
@@ -249,7 +250,11 @@ public class BoardService {
         }
         Boolean check = checkId(memberId, post);
         if(check) {
-            if(data.getTitle() == null || data.getTitle().equals("")) {
+            if((data.getTitle() == null || data.getTitle().equals("")) && (data.getContent() == null || data.getContent().equals(""))) {
+                post.setTitle(post.getTitle());
+                post.setContent(post.getContent());
+            }
+            else if(data.getTitle() == null || data.getTitle().equals("")) {
                 post.setTitle(post.getTitle());
                 post.setContent(data.getContent());
             }
@@ -263,6 +268,28 @@ public class BoardService {
             }
             post.setModifiedDt(LocalDateTime.now());
             boardInfoRepository.save(post);
+
+            if(files != null) {
+                List<FileInfoEntity> originalFileList = fileRepository.findByBoard(post);
+                if(originalFileList != null) {
+                    for (int i=0; i <originalFileList.size(); i++) {
+                        originalFileList.get(i).setBoard(null);
+                        fileRepository.save(originalFileList.get(i));
+                    }
+                }
+                for (int i=0; i<files.length; i++) {
+                    String originFileName = files[i].getOriginalFilename();
+                    String saveFilename = String.valueOf(UUID.randomUUID());
+                    Path targetFile = folderLocation.resolve(saveFilename);
+                    try {
+                        Files.copy(files[i].getInputStream(), targetFile, StandardCopyOption.REPLACE_EXISTING);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    FileInfoEntity file = new FileInfoEntity(null, saveFilename, originFileName, post);
+                    fileRepository.save(file);
+                }
+            }
             return MessageVO.builder()
                     .status(true)
                     .message("수정되었습니다.")
@@ -278,9 +305,9 @@ public class BoardService {
         }
     }
 
-    public MessageVO nonUpdate(UpdatePostNonMember data, Long no) {
+    public MessageVO nonUpdate(UpdatePostNonMember data, Long no, MultipartFile[] files) {
+        Path folderLocation = Paths.get(path);
         BoardInfoEntity post = boardInfoRepository.findBySeq(no);
-        String message = null;
         if(post == null) {
             return MessageVO.builder()
                     .status(false)
@@ -296,7 +323,11 @@ public class BoardService {
                     .build();
         }
 
-        if(data.getTitle() == null || data.getTitle().equals("")) {
+        if((data.getTitle() == null || data.getTitle().equals("")) && (data.getContent() == null || data.getContent().equals(""))) {
+            post.setTitle(post.getTitle());
+            post.setContent(post.getContent());
+        }
+        else if(data.getTitle() == null || data.getTitle().equals("")) {
             post.setTitle(post.getTitle());
             post.setContent(data.getContent());
         }
@@ -310,6 +341,29 @@ public class BoardService {
         }
         post.setModifiedDt(LocalDateTime.now());
         boardInfoRepository.save(post);
+
+        if(files != null) {
+            List<FileInfoEntity> originalFileList = fileRepository.findByBoard(post);
+            if(originalFileList != null) {
+                for (int i=0; i <originalFileList.size(); i++) {
+                    originalFileList.get(i).setBoard(null);
+                    fileRepository.save(originalFileList.get(i));
+                }
+            }
+            for (int i=0; i<files.length; i++) {
+                String originFileName = files[i].getOriginalFilename();
+                String saveFilename = String.valueOf(UUID.randomUUID());
+                Path targetFile = folderLocation.resolve(saveFilename);
+                try {
+                    Files.copy(files[i].getInputStream(), targetFile, StandardCopyOption.REPLACE_EXISTING);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                FileInfoEntity file = new FileInfoEntity(null, saveFilename, originFileName, post);
+                fileRepository.save(file);
+            }
+        }
+
         return MessageVO.builder()
                 .status(true)
                 .message("수정되었습니다.")
