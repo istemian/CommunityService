@@ -8,20 +8,26 @@ import com.lth.community.repository.BoardInfoRepository;
 import com.lth.community.repository.CommentInfoRepository;
 import com.lth.community.repository.DeleteMemberInfoRepository;
 import com.lth.community.repository.MemberInfoRepository;
+import com.lth.community.security.filter.JwtAuthenticationFilter;
 import com.lth.community.security.provider.JwtTokenProvider;
 import com.lth.community.security.service.CustomUserDetailService;
+import com.lth.community.security.vo.TokenVO;
 import com.lth.community.vo.*;
 import com.lth.community.vo.board.BoardInfoVO;
 import com.lth.community.vo.board.GetBoardVO;
 import com.lth.community.vo.comment.GetMyCommentVO;
 import com.lth.community.vo.member.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -45,6 +51,7 @@ public class MemberService {
     private final DeleteMemberInfoRepository deleteMemberInfoRepository;
     private final BoardInfoRepository boardInfoRepository;
     private final CommentInfoRepository commentInfoRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     public MemberLoginResponseVO login(LoginVO login) {
         MemberInfoEntity member = memberInfoRepository.findByMemberId(login.getId());
@@ -351,5 +358,39 @@ public class MemberService {
             commentList.add(myComment);
         }
         return commentList;
+    }
+
+    public MemberReissueAccessTokenVO reissueToken(String memberId) {
+        MemberInfoEntity member = memberInfoRepository.findByMemberId(memberId);
+        if(member.getRefreshToken() != null) {
+            if(jwtTokenProvider.validateToken(member.getRefreshToken())) {
+                UsernamePasswordAuthenticationToken authenticationToken =
+                        new UsernamePasswordAuthenticationToken(member.getMemberId(), member.getPw());
+                Authentication authentication1 = authBuilder.getObject().authenticate(authenticationToken);
+                return MemberReissueAccessTokenVO.builder()
+                        .status(true)
+                        .message("AccessToken 재발급 완료")
+                        .grantType("Bearer")
+                        .accessToken(tokenProvider.generateToken(authentication1).getAccessToken())
+                        .code(HttpStatus.OK)
+                        .build();
+            }
+            else {
+                return MemberReissueAccessTokenVO.builder()
+                        .status(false)
+                        .message("RefreshToken 오류")
+                        .grantType(null)
+                        .accessToken(null)
+                        .code(HttpStatus.FORBIDDEN)
+                        .build();
+            }
+        }
+        return MemberReissueAccessTokenVO.builder()
+                .status(false)
+                .message("RefreshToken이 존재하지 않습니다.")
+                .grantType(null)
+                .accessToken(null)
+                .code(HttpStatus.BAD_REQUEST)
+                .build();
     }
 }

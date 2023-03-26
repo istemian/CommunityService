@@ -1,18 +1,25 @@
 package com.lth.community.api;
 
+import com.lth.community.security.provider.JwtTokenProvider;
 import com.lth.community.service.MemberService;
 import com.lth.community.vo.*;
 import com.lth.community.vo.board.BoardInfoVO;
 import com.lth.community.vo.board.GetBoardVO;
 import com.lth.community.vo.comment.GetMyCommentVO;
 import com.lth.community.vo.member.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +30,7 @@ import java.util.List;
 @Tag(name = "회원 API", description = "회원 CRUD API 입니다.")
 public class MemberAPIController {
     private final MemberService memberService;
+    private final JwtTokenProvider jwtTokenProvider;
     @Operation(summary = "로그인")
     @PostMapping("/login")
     public ResponseEntity<MemberLoginResponseVO> postMemberLogin(@RequestBody LoginVO login) {
@@ -81,5 +89,14 @@ public class MemberAPIController {
     @GetMapping("/myComment")
     public ResponseEntity<List<GetMyCommentVO>> getMyComment(Authentication authentication) {
         return new ResponseEntity<>(memberService.getMyComment(authentication.getName()), HttpStatus.OK);
+    }
+
+    @Operation(summary = "Access Token 재발급", description = "만료된 Access Token을 입력 시 DB에 저장된 회원의 Refresh Token 존재 유무 확인 및 토큰 검증 후 Access Token을 재발급 합니다.")
+    @PostMapping("/reissue")
+    public ResponseEntity<MemberReissueAccessTokenVO> reissueToken(HttpServletRequest request) {
+        String token = request.getHeader(HttpHeaders.AUTHORIZATION).substring(7);
+        String memberId = jwtTokenProvider.parseClaims(token).getSubject();
+        MemberReissueAccessTokenVO response = memberService.reissueToken(memberId);
+        return new ResponseEntity<>(response, response.getCode());
     }
 }

@@ -35,7 +35,7 @@ public class WebSecurityConfig {
                 .requestMatchers("/api/admins/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/boards/file/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/boards/**").permitAll()
-                .requestMatchers("/swagger/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/swagger/**", "/swagger-ui/**", "/v3/api-docs/**", "/api/members/reissue").permitAll()
                 .requestMatchers("/api/boards/non/**", "/api/comments/non/**", "/api/members/findId", "/api/members/findPw", "/api/members/login").anonymous()
                 .requestMatchers(HttpMethod.POST, "/api/members").anonymous()
                 .anyRequest().authenticated()
