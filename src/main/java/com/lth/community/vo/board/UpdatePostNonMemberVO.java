@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UpdatePostNonMember {
+public class UpdatePostNonMemberVO {
     private Long postNo;
     private String pw;
     private String title;

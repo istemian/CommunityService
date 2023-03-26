@@ -366,19 +366,19 @@ public class MemberService {
             if(jwtTokenProvider.validateToken(member.getRefreshToken())) {
                 UsernamePasswordAuthenticationToken authenticationToken =
                         new UsernamePasswordAuthenticationToken(member.getMemberId(), member.getPw());
-                Authentication authentication1 = authBuilder.getObject().authenticate(authenticationToken);
+                Authentication authentication = authBuilder.getObject().authenticate(authenticationToken);
                 return MemberReissueAccessTokenVO.builder()
                         .status(true)
-                        .message("AccessToken 재발급 완료")
+                        .message("Access Token 재발급 완료")
                         .grantType("Bearer")
-                        .accessToken(tokenProvider.generateToken(authentication1).getAccessToken())
+                        .accessToken(tokenProvider.generateToken(authentication).getAccessToken())
                         .code(HttpStatus.OK)
                         .build();
             }
             else {
                 return MemberReissueAccessTokenVO.builder()
                         .status(false)
-                        .message("RefreshToken 오류")
+                        .message("Refresh Token 오류")
                         .grantType(null)
                         .accessToken(null)
                         .code(HttpStatus.FORBIDDEN)
@@ -387,7 +387,7 @@ public class MemberService {
         }
         return MemberReissueAccessTokenVO.builder()
                 .status(false)
-                .message("RefreshToken이 존재하지 않습니다.")
+                .message("Refresh Token이 존재하지 않습니다.")
                 .grantType(null)
                 .accessToken(null)
                 .code(HttpStatus.BAD_REQUEST)

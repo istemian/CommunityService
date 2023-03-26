@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -238,7 +237,7 @@ public class BoardService {
                 .build();
     }
 
-    public MessageVO update(WritingMemberVO data, String memberId, MultipartFile[] files) {
+    public MessageVO update(UpdatePostMemberVO data, String memberId, MultipartFile[] files) {
         Path folderLocation = Paths.get(path);
         System.out.println("data = " + data.getTitle());
         BoardInfoEntity post = boardInfoRepository.findBySeq(data.getPostNo());
@@ -306,7 +305,7 @@ public class BoardService {
         }
     }
 
-    public MessageVO nonUpdate(UpdatePostNonMember data, MultipartFile[] files) {
+    public MessageVO nonUpdate(UpdatePostNonMemberVO data, MultipartFile[] files) {
         Path folderLocation = Paths.get(path);
         BoardInfoEntity post = boardInfoRepository.findBySeq(data.getPostNo());
         if(post == null) {

@@ -91,7 +91,7 @@ public class MemberAPIController {
         return new ResponseEntity<>(memberService.getMyComment(authentication.getName()), HttpStatus.OK);
     }
 
-    @Operation(summary = "Access Token 재발급", description = "만료된 Access Token을 입력 시 DB에 저장된 회원의 Refresh Token 존재 유무 확인 및 토큰 검증 후 Access Token을 재발급 합니다.")
+    @Operation(summary = "Access Token 재발급", description = "Access Token을 입력 시 DB에 저장된 회원의 Refresh Token 존재 유무 확인 및 토큰 검증 후 Access Token을 재발급 합니다.")
     @PostMapping("/reissue")
     public ResponseEntity<MemberReissueAccessTokenVO> reissueToken(HttpServletRequest request) {
         String token = request.getHeader(HttpHeaders.AUTHORIZATION).substring(7);

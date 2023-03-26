@@ -6,12 +6,8 @@ import com.lth.community.vo.board.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +15,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/boards")
@@ -64,14 +58,14 @@ public class BoardAPIController {
 
     @Operation(summary = "회원 게시글 수정", description = "게시글을 수정합니다. 파일 여러개 등록이 가능하며 기존 등록된 파일은 삭제됩니다. 제목과 내용은 미입력 가능(파일만 변경)하며, 미입력 시 기존 제목과 내용 적용됩니다.")
     @PatchMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<MessageVO> updatePost(Authentication authentication, @RequestPart(required = false) MultipartFile[] files, WritingMemberVO data) {
+    public ResponseEntity<MessageVO> updatePost(Authentication authentication, @RequestPart(required = false) MultipartFile[] files, UpdatePostMemberVO data) {
         MessageVO response = boardService.update(data, authentication.getName(), files);
         return new ResponseEntity<>(response, response.getCode());
     }
 
     @Operation(summary = "비회원 게시글 수정", description = "비밀번호가 일치하면 게시글을 수정할 수 있습니다. 파일 여러개 등록이 가능하며 기존 등록된 파일은 삭제됩니다. 비밀번호 외 제목과 내용은 미입력 가능(파일만 변경)하며, 미입력 시 기존 제목과 내용 적용됩니다.")
     @PatchMapping(value = "/non", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<MessageVO> updatePost(@RequestPart(required = false) MultipartFile[] files, UpdatePostNonMember data) {
+    public ResponseEntity<MessageVO> updatePost(@RequestPart(required = false) MultipartFile[] files, UpdatePostNonMemberVO data) {
         MessageVO response = boardService.nonUpdate(data, files);
         return new ResponseEntity<>(response, response.getCode());
     }
